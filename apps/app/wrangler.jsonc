@@ -1,0 +1,23 @@
+// Cloudflare config for the web app (server-rendered Expo Router pages).
+// Build first: EXPO_PUBLIC_API_URL=https://api.klozbuy.com pnpm build:web
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "klozbuy-web",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // The export's server bundle (CommonJS, from Metro) and route manifest are loaded with
+  // dynamic imports, so they are uploaded as extra modules rather than bundled.
+  "base_dir": "dist/server",
+  "find_additional_modules": true,
+  "rules": [
+    { "type": "CommonJS", "globs": ["_expo/**/*.js"], "fallthrough": false },
+    { "type": "Text", "globs": ["**/*.json", "**/*.html"], "fallthrough": true },
+  ],
+  "assets": { "directory": "dist/client", "binding": "ASSETS" },
+  "env": {
+    "staging": { "name": "klozbuy-web-staging" },
+    "production": { "name": "klozbuy-web-production" },
+  },
+}

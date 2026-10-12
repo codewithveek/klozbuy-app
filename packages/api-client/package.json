@@ -1,0 +1,29 @@
+{
+  "name": "@klozbuy/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@klozbuy/contracts": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "*"
+  },
+  "devDependencies": {
+    "@klozbuy/config": "workspace:*",
+    "@tanstack/react-query": "^5.104.2",
+    "@types/react": "~19.2.18",
+    "react": "19.2.3",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.4"
+  }
+}

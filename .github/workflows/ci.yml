@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      # A real TiDB for the database tests (sign-in, profile, migrations).
+      tidb:
+        image: pingcap/tidb:v8.5.3
+        ports:
+          - 4000:4000
+    env:
+      TEST_DATABASE_URL: mysql://root@127.0.0.1:4000/klozbuy_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Formatting
+        run: pnpm format:check
+      - name: Lint (includes function, file and component size limits)
+        run: pnpm lint
+      - name: Architecture boundaries
+        run: pnpm boundaries
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Migrations match the schema
+        run: |
+          pnpm db:generate
+          if [ -n "$(git status --porcelain packages/db/drizzle)" ]; then
+            echo "::error::The schema changed without a migration. Run pnpm db:generate and commit packages/db/drizzle."
+            git status --porcelain packages/db/drizzle
+            exit 1
+          fi
+
+      - name: Wait for TiDB
+        run: |
+          for attempt in $(seq 1 30); do
+            (echo > /dev/tcp/127.0.0.1/4000) 2>/dev/null && exit 0
+            sleep 2
+          done
+          echo "::error::TiDB did not start"
+          exit 1
+      - name: Tests
+        run: pnpm test
+
+      - name: Bundle the API worker
+        run: pnpm --filter @klozbuy/api build
+      - name: Build the web app
+        run: pnpm --filter @klozbuy/app build:web
+        env:
+          EXPO_PUBLIC_API_URL: https://api.klozbuy.com

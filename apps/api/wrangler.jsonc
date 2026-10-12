@@ -1,0 +1,70 @@
+// Cloudflare config for the API worker. Secrets are not here: set DATABASE_URL,
+// BETTER_AUTH_SECRET and (for SMS) TERMII_API_KEY with `wrangler secret put <NAME> --env <env>`,
+// or in .dev.vars for local development (see .dev.vars.example).
+// The klozbuy.com hostnames are placeholders until the production domain is settled.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "klozbuy-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    "ENVIRONMENT": "development",
+    "API_URL": "http://localhost:8787",
+    "TRUSTED_ORIGINS": "http://localhost:8081,klozbuy://",
+    "OTP_SENDER": "console",
+  },
+  "ratelimits": [
+    { "name": "AUTH_IP_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } },
+    { "name": "OTP_PHONE_LIMITER", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } },
+  ],
+  "env": {
+    "staging": {
+      "name": "klozbuy-api-staging",
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "API_URL": "https://api.staging.klozbuy.com",
+        "TRUSTED_ORIGINS": "https://staging.klozbuy.com,klozbuy://",
+        "COOKIE_DOMAIN": "staging.klozbuy.com",
+        "OTP_SENDER": "termii",
+        "TERMII_SENDER_ID": "Klozbuy",
+      },
+      "ratelimits": [
+        {
+          "name": "AUTH_IP_LIMITER",
+          "namespace_id": "2001",
+          "simple": { "limit": 20, "period": 60 },
+        },
+        {
+          "name": "OTP_PHONE_LIMITER",
+          "namespace_id": "2002",
+          "simple": { "limit": 3, "period": 60 },
+        },
+      ],
+    },
+    "production": {
+      "name": "klozbuy-api-production",
+      "vars": {
+        "ENVIRONMENT": "production",
+        "API_URL": "https://api.klozbuy.com",
+        "TRUSTED_ORIGINS": "https://klozbuy.com,https://www.klozbuy.com,klozbuy://",
+        "COOKIE_DOMAIN": "klozbuy.com",
+        "OTP_SENDER": "termii",
+        "TERMII_SENDER_ID": "Klozbuy",
+      },
+      "ratelimits": [
+        {
+          "name": "AUTH_IP_LIMITER",
+          "namespace_id": "3001",
+          "simple": { "limit": 20, "period": 60 },
+        },
+        {
+          "name": "OTP_PHONE_LIMITER",
+          "namespace_id": "3002",
+          "simple": { "limit": 3, "period": 60 },
+        },
+      ],
+    },
+  },
+}
