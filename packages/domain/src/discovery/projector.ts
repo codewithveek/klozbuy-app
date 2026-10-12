@@ -1,18 +1,30 @@
 import type { Db, DbExecutor } from '@klozbuy/db';
-import { searchTerms } from '@klozbuy/shared';
+import { formatDays, searchTerms } from '@klozbuy/shared';
 import { findShopListings, getListingRow, type ListingRow } from '../catalog';
 import type { DomainEvent } from '../events';
 import { getShopSnapshot, type ShopSnapshot } from '../shops';
-import { nearestArea } from './ranking';
+import { findPlaces, nearestArea } from '../places';
 import * as repo from './repository';
 
 const INDEXED_STATUSES = new Set<ListingRow['status']>(['active', 'sold']);
 
 type Located = ShopSnapshot & { location: NonNullable<ShopSnapshot['location']> };
 
+/** The first sentence or so of the description, for the line under a card's title. */
+export function summarize(description: string | null): string | null {
+  if (!description) return null;
+  const firstSentence = description.split(/(?<=[.!?])\s/)[0] ?? description;
+  if (firstSentence.length <= 110) return firstSentence;
+  return `${firstSentence.slice(0, 107).replace(/\s+\S*$/, '')}…`;
+}
+
 function toSearchRow(listing: ListingRow, shop: Located, areaId: string | null) {
-  const { location } = shop;
+  const { location, hours } = shop;
   return {
+    summary: summarize(listing.description),
+    opensAt: hours.opensAt,
+    closesAt: hours.closesAt,
+    openDays: formatDays(hours.openDays),
     listingId: listing.id,
     slug: listing.slug,
     type: listing.type,
@@ -58,7 +70,7 @@ export async function reindexListing(db: DbExecutor, listingId: string): Promise
   }
   const { listing, shop } = indexable;
   const areaId =
-    shop.location.areaId ?? nearestArea(await repo.findAreas(db), shop.location)?.id ?? null;
+    shop.location.areaId ?? nearestArea(await findPlaces(db), shop.location)?.id ?? null;
   await repo.upsertSearchRow(db, toSearchRow(listing, shop, areaId));
   const words = listing.status === 'active' ? searchTerms(listing.title) : [];
   await repo.replaceTerms(db, listingId, shop.location.h3r7, words);

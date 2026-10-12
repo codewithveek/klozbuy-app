@@ -8,16 +8,16 @@ import { createEventSink } from './wiring';
 /** Helpers for database tests. Not exported from the package. */
 export const fixedClock = (iso: string): Clock => ({ now: () => new Date(iso) });
 
-let phoneCounter = 1_000_000;
+/** Random, because each test file loads this module afresh and files share the database. */
+const testPhone = () => `+234805${String(Math.floor(Math.random() * 10_000_000)).padStart(7, '0')}`;
 
 export async function createTestUser(db: Db, role: UserRole = 'buyer'): Promise<Actor> {
   const userId = createId<'User'>() satisfies UserId;
-  phoneCounter += 1;
   await db.insert(users).values({
     id: userId,
     name: `Test ${role}`,
     email: `${userId}@example.invalid`,
-    phoneNumber: `+234805${phoneCounter}`,
+    phoneNumber: testPhone(),
     role,
   });
   return { userId, role };

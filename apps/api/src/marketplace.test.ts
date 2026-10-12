@@ -73,11 +73,24 @@ describe.runIf(url)('marketplace over HTTP', () => {
     expect(mine.headers.get('Cache-Control')).toBeNull();
     const [shop] = (await mine.json()) as { id: string; whatsappNumber: string }[];
     expect(shop?.whatsappNumber).toBe('+2348031112222');
-    const stats = (await (await call(`/v1/me/shops/${shop?.id}/stats`)).json()) as {
-      totals: { whatsapp: number };
-    };
-    expect(stats.totals.whatsapp).toBe(1);
-    const anonymous = await app.request(`/v1/me/shops/${shop?.id}/stats`, {}, env);
+    const insights = await call(`/v1/me/shops/${shop?.id}/insights?days=30`);
+    const body = (await insights.json()) as { days: number; totals: { whatsapp: number } };
+    expect(body).toMatchObject({ days: 30, totals: { whatsapp: 1 } });
+    const anonymous = await app.request(`/v1/me/shops/${shop?.id}/insights`, {}, env);
     expect(anonymous.status).toBe(401);
+  });
+
+  it('posts a buyer request and lists it nearby', async () => {
+    const posted = await post('/v1/requests', {
+      text: 'Original Samsung charger',
+      lat: 6.5095,
+      lng: 3.3711,
+    });
+    expect(posted.status).toBe(200);
+    const { id } = (await posted.json()) as { id: string };
+    const nearby = await app.request('/v1/requests/nearby?lat=6.5095&lng=3.3711', {}, env);
+    expect(((await nearby.json()) as { id: string }[]).map((r) => r.id)).toContain(id);
+    const missing = await app.request('/v1/requests/aaaaaaaaaaaaaaaa', {}, env);
+    expect(missing.status).toBe(404);
   });
 });

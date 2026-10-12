@@ -17,6 +17,7 @@ const allowAll = { limit: async () => ({ success: true }) };
 const env: Env = {
   ENVIRONMENT: 'development',
   API_URL: `http://localhost:${port}`,
+  SITE_URL: process.env.SITE_URL ?? 'http://localhost:8081',
   TRUSTED_ORIGINS: process.env.TRUSTED_ORIGINS ?? 'http://localhost:8081,klozbuy://',
   OTP_SENDER: 'console',
   DATABASE_URL: url,

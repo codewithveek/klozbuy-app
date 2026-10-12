@@ -1,5 +1,6 @@
 import { nearbyFeedQuerySchema, searchQuerySchema } from '@klozbuy/contracts';
-import { listAreas, nearbyFeed, searchNearby } from '@klozbuy/domain/discovery';
+import { nearbyFeed, searchNearby } from '@klozbuy/domain/discovery';
+import { listAreas } from '@klozbuy/domain/places';
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env';
 import { CACHE, cacheFor } from '../cache';

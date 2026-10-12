@@ -26,6 +26,10 @@ export const shops = mysqlTable(
       .notNull()
       .default('unverified'),
     verifiedAt: utcDatetime(),
+    /** Opening hours in Lagos time, "08:00"; days are ISO weekdays, "1,2,3,4,5,6". */
+    opensAt: varchar({ length: 5 }),
+    closesAt: varchar({ length: 5 }),
+    openDays: varchar({ length: 16 }).notNull().default('1,2,3,4,5,6'),
     /** Derived from published reviews by the reviews module's events. */
     ratingAvg: double(),
     ratingCount: int({ unsigned: true }).notNull().default(0),

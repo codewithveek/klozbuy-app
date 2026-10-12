@@ -5,6 +5,7 @@ import type {
   ListingDetail,
   ShopPublic,
   NearbyFeedQuery,
+  NearbyRequestsQuery,
   SearchQuery,
   SetListingStatusInput,
 } from '@klozbuy/contracts';
@@ -23,7 +24,13 @@ export const keys = {
   myShops: ['my-shops'] as const,
   myShop: (id: string) => ['my-shop', id] as const,
   myListings: (id: string) => ['my-listings', id] as const,
-  stats: (id: string) => ['shop-stats', id] as const,
+  insights: (id: string, days: 7 | 30) => ['shop-insights', id, days] as const,
+  shopLeads: (id: string) => ['shop-leads', id] as const,
+  shopRequests: (id: string) => ['shop-requests', id] as const,
+  nearbyRequests: (input: NearbyRequestsQuery) => ['nearby-requests', input] as const,
+  request: (id: string) => ['request', id] as const,
+  myRequests: ['my-requests'] as const,
+  chats: ['chats'] as const,
 };
 
 const HOUR = 60 * 60 * 1000;
@@ -76,11 +83,6 @@ export function useMyListings(shopId: string) {
     queryKey: keys.myListings(shopId),
     queryFn: () => api.shops.myListings(shopId),
   });
-}
-
-export function useShopStats(shopId: string) {
-  const api = useApiClient();
-  return useQuery({ queryKey: keys.stats(shopId), queryFn: () => api.shops.stats(shopId) });
 }
 
 export function useCreateShop() {

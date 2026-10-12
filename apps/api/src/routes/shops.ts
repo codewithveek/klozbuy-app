@@ -2,15 +2,18 @@ import {
   createShopWithLocationInputSchema,
   recordVisitInputSchema,
   shopLocationInputSchema,
+  updateShopInputSchema,
 } from '@klozbuy/contracts';
 import { listMyListings, listShopListings } from '@klozbuy/domain/catalog';
-import { shopStats } from '@klozbuy/domain/leads';
+import { listShopLeads, shopInsights } from '@klozbuy/domain/leads';
+import { requestsForShop } from '@klozbuy/domain/requests';
 import {
   createShop,
   getMyShop,
   getShopPage,
   listMyShops,
   recordVisit,
+  updateShop,
   updateShopLocation,
 } from '@klozbuy/domain/shops';
 import { Hono } from 'hono';
@@ -18,7 +21,7 @@ import type { AppEnv } from '../app-env';
 import { CACHE, cacheFor } from '../cache';
 import { sendResult } from '../errors';
 import { withActor } from '../middleware/actor';
-import { idParam, slugParam } from '../params';
+import { idParam, insightsQuery, slugParam } from '../params';
 import { validate } from '../validation';
 
 /** Public shop pages and changes to a shop. */
@@ -33,6 +36,9 @@ export const shopRoutes = new Hono<AppEnv>()
   })
   .post('/', validate('json', createShopWithLocationInputSchema), async (c) =>
     sendResult(c, await createShop(c.var.ctx, c.req.valid('json'))),
+  )
+  .patch('/:id', validate('param', idParam), validate('json', updateShopInputSchema), async (c) =>
+    sendResult(c, await updateShop(c.var.ctx, c.req.valid('param').id, c.req.valid('json'))),
   )
   .put(
     '/:id/location',
@@ -62,6 +68,15 @@ export const myShopRoutes = new Hono<AppEnv>()
   .get('/:id/listings', validate('param', idParam), async (c) =>
     sendResult(c, await listMyListings(c.var.ctx, c.req.valid('param').id)),
   )
-  .get('/:id/stats', validate('param', idParam), async (c) =>
-    sendResult(c, await shopStats(c.var.ctx, c.req.valid('param').id)),
+  .get('/:id/insights', validate('param', idParam), validate('query', insightsQuery), async (c) =>
+    sendResult(
+      c,
+      await shopInsights(c.var.ctx, c.req.valid('param').id, c.req.valid('query').days),
+    ),
+  )
+  .get('/:id/leads', validate('param', idParam), async (c) =>
+    sendResult(c, await listShopLeads(c.var.ctx, c.req.valid('param').id)),
+  )
+  .get('/:id/requests', validate('param', idParam), async (c) =>
+    sendResult(c, await requestsForShop(c.var.ctx, c.req.valid('param').id)),
   );

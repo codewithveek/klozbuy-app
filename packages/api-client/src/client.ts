@@ -1,6 +1,12 @@
 import { errorResponseSchema } from '@klozbuy/contracts';
 import type { z } from 'zod';
-import { catalogEndpoints, discoveryEndpoints, meEndpoints, shopEndpoints } from './endpoints';
+import {
+  catalogEndpoints,
+  discoveryEndpoints,
+  meEndpoints,
+  requestEndpoints,
+  shopEndpoints,
+} from './endpoints';
 import { ApiError } from './errors';
 import type { RequestOptions } from './request';
 
@@ -59,6 +65,7 @@ export function createApiClient({ baseUrl, headers, fetch: fetchImpl = fetch }: 
     catalog: catalogEndpoints(request),
     shops: shopEndpoints(request),
     discovery: discoveryEndpoints(request),
+    requests: requestEndpoints(request),
   };
 }
 

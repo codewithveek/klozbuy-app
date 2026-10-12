@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { nearestArea, paginate, rankByDistance } from './ranking';
+import { nearestArea } from '../places';
+import { paginate, rankByDistance } from './ranking';
 
 const yaba = { lat: 6.5095, lng: 3.3711 };
 const now = new Date('2026-03-01T12:00:00Z');
@@ -49,8 +50,9 @@ describe('paginate', () => {
 
 describe('nearestArea', () => {
   const areas = [
-    { name: 'Yaba', lat: 6.5095, lng: 3.3711 },
-    { name: 'Surulere', lat: 6.5005, lng: 3.354 },
+    { name: 'Yaba', lat: 6.5095, lng: 3.3711, kind: 'area' },
+    { name: 'Surulere', lat: 6.5005, lng: 3.354, kind: 'area' },
+    { name: 'Tejuosho Market', lat: 6.5052, lng: 3.358, kind: 'market' },
   ];
 
   it('names the closest area within reach', () => {

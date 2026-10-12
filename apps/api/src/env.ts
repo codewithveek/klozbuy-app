@@ -4,6 +4,8 @@ import { z } from 'zod';
 export interface Env {
   ENVIRONMENT: string;
   API_URL: string;
+  /** The public web app, for links in WhatsApp messages. */
+  SITE_URL: string;
   /** Comma-separated web origins and app schemes allowed to call the API with cookies. */
   TRUSTED_ORIGINS: string;
   COOKIE_DOMAIN?: string;
@@ -23,6 +25,7 @@ const rawConfigSchema = z
   .object({
     ENVIRONMENT: z.enum(['development', 'staging', 'production']),
     API_URL: z.url(),
+    SITE_URL: z.url(),
     TRUSTED_ORIGINS: z.string().min(1),
     COOKIE_DOMAIN: z.string().min(1).optional(),
     DATABASE_URL: z.string().startsWith('mysql://'),
@@ -47,6 +50,7 @@ export type OtpConfig =
 export interface Config {
   environment: 'development' | 'staging' | 'production';
   apiUrl: string;
+  siteUrl: string;
   trustedOrigins: string[];
   cookieDomain?: string;
   databaseUrl: string;
@@ -69,6 +73,7 @@ export function parseConfig(env: Env): Config {
   return {
     environment: raw.ENVIRONMENT,
     apiUrl: raw.API_URL,
+    siteUrl: raw.SITE_URL.replace(/\/$/, ''),
     trustedOrigins: raw.TRUSTED_ORIGINS.split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),

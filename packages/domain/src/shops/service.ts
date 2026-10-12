@@ -2,19 +2,31 @@ import type {
   CreateShopWithLocationInput,
   MyShop,
   RecordVisitInput,
+  ShopHours,
   ShopLocationInput,
   ShopPublic,
+  UpdateShopInput,
 } from '@klozbuy/contracts';
-import { createId, err, ok } from '@klozbuy/shared';
+import type { DbExecutor } from '@klozbuy/db';
+import { createId, err, formatDays, ok } from '@klozbuy/shared';
 import { cellsForPoint } from '@klozbuy/shared/geo';
 import type { Ctx } from '../context';
 import { forbidden, notFound, requireActor, type DomainResult } from '../errors';
+import { findPlaces, nearestArea } from '../places';
 import { uniqueSlug } from '../slugs';
 import { toMyShop, toShopPublic } from './mappers';
+import { areaNameOf } from './snapshots';
 import * as repo from './repository';
 
-function locationValues(shopId: string, input: ShopLocationInput) {
+const hoursValues = (hours: ShopHours | undefined) =>
+  hours
+    ? { opensAt: hours.opensAt, closesAt: hours.closesAt, openDays: formatDays(hours.openDays) }
+    : {};
+
+/** The location row, labelled with the nearest neighbourhood when none was chosen. */
+async function locationValues(db: DbExecutor, shopId: string, input: ShopLocationInput) {
   const { h3r7, h3r8 } = cellsForPoint(input);
+  const areaId = input.areaId ?? nearestArea(await findPlaces(db), input)?.id ?? null;
   return {
     id: createId(),
     shopId,
@@ -24,7 +36,7 @@ function locationValues(shopId: string, input: ShopLocationInput) {
     h3r8,
     landmark: input.landmark,
     address: input.address ?? null,
-    areaId: input.areaId ?? null,
+    areaId,
   };
 }
 
@@ -37,6 +49,7 @@ export async function createShop(
   if (!actor.ok) return actor;
   const id = createId();
   const slug = await uniqueSlug(input.name, (s) => repo.shopSlugTaken(ctx.db, s));
+  const location = await locationValues(ctx.db, id, input.location);
   await ctx.db.transaction(async (tx) => {
     await repo.insertShop(tx, {
       id,
@@ -46,8 +59,9 @@ export async function createShop(
       categoryId: input.categoryId,
       description: input.description ?? null,
       whatsappNumber: input.whatsappNumber,
+      ...hoursValues(input.hours),
     });
-    await repo.replacePrimaryLocation(tx, locationValues(id, input.location));
+    await repo.replacePrimaryLocation(tx, location);
   });
   await ctx.publish([{ type: 'ShopChanged', shopId: id }]);
   return getMyShop(ctx, id);
@@ -71,7 +85,8 @@ export async function requireShopOwner(
 export async function getMyShop(ctx: Ctx, shopId: string): Promise<DomainResult<MyShop>> {
   const shop = await requireShopOwner(ctx, shopId);
   if (!shop.ok) return shop;
-  return ok(toMyShop(shop.value, await repo.findPrimaryLocation(ctx.db, shopId)));
+  const location = await repo.findPrimaryLocation(ctx.db, shopId);
+  return ok(toMyShop(shop.value, location, await areaNameOf(ctx.db, location)));
 }
 
 export async function listMyShops(ctx: Ctx): Promise<DomainResult<MyShop[]>> {
@@ -79,7 +94,8 @@ export async function listMyShops(ctx: Ctx): Promise<DomainResult<MyShop[]>> {
   if (!actor.ok) return actor;
   const shops = await repo.findShopsByOwner(ctx.db, actor.value.userId);
   const locations = await Promise.all(shops.map((s) => repo.findPrimaryLocation(ctx.db, s.id)));
-  return ok(shops.map((shop, i) => toMyShop(shop, locations[i] ?? null)));
+  const names = await Promise.all(locations.map((l) => areaNameOf(ctx.db, l)));
+  return ok(shops.map((shop, i) => toMyShop(shop, locations[i] ?? null, names[i] ?? null)));
 }
 
 /** The public shop page. Suspended shops are hidden. */
@@ -87,7 +103,8 @@ export async function getShopPage(ctx: Ctx, slug: string): Promise<DomainResult<
   const shop = await repo.findShopBySlug(ctx.db, slug);
   if (!shop || shop.verificationStatus === 'suspended')
     return err(notFound('SHOP_NOT_FOUND', 'That shop'));
-  return ok(toShopPublic(shop, await repo.findPrimaryLocation(ctx.db, shop.id)));
+  const location = await repo.findPrimaryLocation(ctx.db, shop.id);
+  return ok(toShopPublic(shop, location, await areaNameOf(ctx.db, location)));
 }
 
 export async function updateShopLocation(
@@ -97,7 +114,21 @@ export async function updateShopLocation(
 ): Promise<DomainResult<MyShop>> {
   const shop = await requireShopOwner(ctx, shopId);
   if (!shop.ok) return shop;
-  await repo.replacePrimaryLocation(ctx.db, locationValues(shopId, input));
+  await repo.replacePrimaryLocation(ctx.db, await locationValues(ctx.db, shopId, input));
+  await ctx.publish([{ type: 'ShopChanged', shopId }]);
+  return getMyShop(ctx, shopId);
+}
+
+/** Name, description, WhatsApp number or opening hours. */
+export async function updateShop(
+  ctx: Ctx,
+  shopId: string,
+  input: UpdateShopInput,
+): Promise<DomainResult<MyShop>> {
+  const shop = await requireShopOwner(ctx, shopId);
+  if (!shop.ok) return shop;
+  const { hours, ...fields } = input;
+  await repo.updateShopRow(ctx.db, shopId, { ...fields, ...hoursValues(hours) });
   await ctx.publish([{ type: 'ShopChanged', shopId }]);
   return getMyShop(ctx, shopId);
 }

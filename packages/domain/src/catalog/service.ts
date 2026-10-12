@@ -111,10 +111,11 @@ export async function getListingPage(ctx: Ctx, slug: string): Promise<DomainResu
   const category = visible ? await repo.findCategory(ctx.db, listing.categoryId) : null;
   if (!listing || !shop?.listable || !category)
     return err(notFound('LISTING_NOT_FOUND', 'That listing'));
-  const { listable: _listable, whatsappNumber: _phone, location, ...summary } = shop;
+  const { listable: _listable, whatsappNumber: _phone, location, areaName, ...summary } = shop;
+  const activeListings = await repo.countActiveListings(ctx.db, shop.id);
   return ok({
     ...toListing(listing),
-    shop: { ...summary, location: toShopLocation(location) },
+    shop: { ...summary, location: toShopLocation(location, areaName), activeListings },
     category: { id: category.id, slug: category.slug, name: category.name },
   });
 }

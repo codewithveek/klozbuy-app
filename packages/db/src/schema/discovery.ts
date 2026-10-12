@@ -1,4 +1,10 @@
-import { CONDITIONS, LISTING_STATUSES, LISTING_TYPES, STOCK_STATUSES } from '@klozbuy/contracts';
+import {
+  AREA_KINDS,
+  CONDITIONS,
+  LISTING_STATUSES,
+  LISTING_TYPES,
+  STOCK_STATUSES,
+} from '@klozbuy/contracts';
 import {
   boolean,
   double,
@@ -29,7 +35,9 @@ export const areas = mysqlTable(
   {
     id: primaryId(),
     slug: varchar({ length: 80 }).notNull(),
+    kind: varchar({ length: 16, enum: AREA_KINDS }).notNull().default('area'),
     name: varchar({ length: 80 }).notNull(),
+    description: varchar({ length: 120 }),
     city: varchar({ length: 80 }).notNull(),
     state: varchar({ length: 40 }).notNull(),
     lat: latitude(),
@@ -46,6 +54,8 @@ export const listingSearch = mysqlTable(
     slug: varchar({ length: 80 }).notNull(),
     type: varchar({ length: 16, enum: LISTING_TYPES }).notNull(),
     title: varchar({ length: 120 }).notNull(),
+    /** The first words of the description, for the line under the title on cards. */
+    summary: varchar({ length: 120 }),
     priceNgn: naira().notNull(),
     negotiable: boolean().notNull(),
     condition: varchar({ length: 16, enum: CONDITIONS }),
@@ -62,6 +72,9 @@ export const listingSearch = mysqlTable(
     ratingCount: int({ unsigned: true }).notNull().default(0),
     areaId: id(),
     landmark: varchar({ length: 150 }).notNull(),
+    opensAt: varchar({ length: 5 }),
+    closesAt: varchar({ length: 5 }),
+    openDays: varchar({ length: 16 }).notNull().default('1,2,3,4,5,6'),
     lat: latitude(),
     lng: longitude(),
     h3r7: h3Cell().notNull(),

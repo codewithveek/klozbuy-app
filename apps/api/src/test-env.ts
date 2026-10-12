@@ -8,6 +8,7 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
   return {
     ENVIRONMENT: 'development',
     API_URL: 'http://localhost:8787',
+    SITE_URL: 'http://localhost:8081',
     TRUSTED_ORIGINS: 'http://localhost:8081, klozbuy://',
     OTP_SENDER: 'console',
     DATABASE_URL: 'mysql://user:password@127.0.0.1:4000/klozbuy_test',

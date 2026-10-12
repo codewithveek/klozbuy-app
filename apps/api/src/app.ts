@@ -12,6 +12,7 @@ import { discoveryRoutes } from './routes/discovery';
 import { goRoutes } from './routes/go';
 import { healthRoutes } from './routes/health';
 import { meRoutes } from './routes/me';
+import { reportRoutes, requestRoutes } from './routes/requests';
 import { myShopRoutes, shopRoutes } from './routes/shops';
 
 export interface AppOptions {
@@ -41,6 +42,8 @@ export function createApp({ createDb = tidbCloud }: AppOptions = {}) {
     .route('/v1/categories', categoryRoutes)
     .route('/v1/listings', listingRoutes)
     .route('/v1/shops', shopRoutes)
+    .route('/v1/requests', requestRoutes)
+    .route('/v1/reports', reportRoutes)
     .route('/v1', discoveryRoutes)
     .route('/go', goRoutes);
   app.onError(handleError);

@@ -11,7 +11,7 @@ import {
 } from './catalog';
 import type { Actor, Ctx } from './context';
 import { nearbyFeed, searchNearby } from './discovery';
-import { shopStats, startLead } from './leads';
+import { recordView, shopInsights, startLead } from './leads';
 import { createShop, getShopPage, recordVisit } from './shops';
 import { createTestUser, testCtx } from './test-support';
 
@@ -25,7 +25,15 @@ function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: { code: 
 }
 
 const ids = (page: FeedPage) => page.items.map((item) => item.listingId);
-const feedQuery = { ...yaba, radiusKm: 3, verifiedOnly: false };
+const site = { siteUrl: 'https://klozbuy.com' };
+const feedQuery = {
+  ...yaba,
+  radiusKm: 3,
+  verifiedOnly: false,
+  openNow: false,
+  sort: 'closest' as const,
+  limit: 20,
+};
 
 describe.runIf(url)('marketplace flow', () => {
   let testDb: ReturnType<typeof createTestDb>;
@@ -137,14 +145,20 @@ describe.runIf(url)('marketplace flow', () => {
     expect(result).toMatchObject({ ok: false, error: { code: 'CATEGORY_NOT_FOUND' } });
   });
 
-  it('records a WhatsApp lead and counts it for the seller', async () => {
-    const link = unwrap(await startLead(buyer, listingId, 'whatsapp'));
+  it('records views and a WhatsApp lead and counts them for the seller', async () => {
+    unwrap(await recordView(buyer, listingId));
+    unwrap(await recordView(stranger, listingId));
+    const link = unwrap(
+      await startLead(buyer, listingId, 'whatsapp', { ...site, distanceKm: 0.4 }),
+    );
     expect(link).toMatch(/^https:\/\/wa\.me\/2348031234567\?text=/);
     expect(decodeURIComponent(link)).toContain('iPhone 13, 128 GB, UK used (₦499,000)');
-    const stats = unwrap(await shopStats(seller, shopId));
-    expect(stats.totals.whatsapp).toBe(1);
-    expect(stats.days).toHaveLength(14);
-    expect((await shopStats(stranger, shopId)).ok).toBe(false);
+    expect(decodeURIComponent(link)).toContain(`https://klozbuy.com/l/${listingSlug}`);
+    const insights = unwrap(await shopInsights(seller, shopId, 7));
+    expect(insights.totals).toMatchObject({ views: 2, whatsapp: 1, call: 0 });
+    expect(insights.whatsappByDay).toHaveLength(7);
+    expect(insights.listings[0]).toMatchObject({ listingId, views: 2, whatsapp: 1 });
+    expect((await shopInsights(stranger, shopId, 7)).ok).toBe(false);
   });
 
   it('confirms stock, then marks the listing sold and drops it from the feed', async () => {
@@ -153,6 +167,6 @@ describe.runIf(url)('marketplace flow', () => {
     unwrap(await setListingStatus(seller, listingId, { status: 'sold' }));
     expect(ids(unwrap(await nearbyFeed(buyer, feedQuery)))).not.toContain(listingId);
     expect(unwrap(await getListingPage(buyer, listingSlug)).status).toBe('sold');
-    expect((await startLead(buyer, listingId, 'whatsapp')).ok).toBe(false);
+    expect((await startLead(buyer, listingId, 'whatsapp', site)).ok).toBe(false);
   });
 });

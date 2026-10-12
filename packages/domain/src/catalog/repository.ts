@@ -1,6 +1,6 @@
 import type { DbExecutor } from '@klozbuy/db';
 import { categories, listings } from '@klozbuy/db/schema';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
 
 export type ListingRow = typeof listings.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;
@@ -49,4 +49,12 @@ export async function findCategories(db: DbExecutor): Promise<CategoryRow[]> {
 export async function findCategory(db: DbExecutor, id: string): Promise<CategoryRow | null> {
   const rows = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
   return rows[0] ?? null;
+}
+
+export async function countActiveListings(db: DbExecutor, shopId: string): Promise<number> {
+  const rows = await db
+    .select({ total: count() })
+    .from(listings)
+    .where(and(eq(listings.shopId, shopId), eq(listings.status, 'active')));
+  return rows[0]?.total ?? 0;
 }

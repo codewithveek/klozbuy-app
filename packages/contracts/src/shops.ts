@@ -1,6 +1,16 @@
 import { z } from 'zod';
 import { idSchema, pointSchema, timestampSchema } from './common';
 
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use 24-hour time, like 08:00');
+
+/** Lagos time. Null hours mean the shop hasn't said. */
+export const shopHoursSchema = z.object({
+  opensAt: hhmm.nullable(),
+  closesAt: hhmm.nullable(),
+  openDays: z.array(z.number().int().min(1).max(7)).max(7),
+});
+export type ShopHours = z.infer<typeof shopHoursSchema>;
+
 export const VERIFICATION_STATUSES = [
   'unverified',
   'visit_booked',
@@ -31,6 +41,7 @@ export const shopLocationSchema = z.object({
   landmark: z.string(),
   address: z.string().nullable(),
   areaId: idSchema.nullable(),
+  areaName: z.string().nullable(),
 });
 export type ShopLocation = z.infer<typeof shopLocationSchema>;
 
@@ -40,6 +51,7 @@ export const shopPublicSchema = shopSummarySchema.extend({
   description: z.string().nullable(),
   verifiedAt: timestampSchema.nullable(),
   location: shopLocationSchema.nullable(),
+  hours: shopHoursSchema,
   createdAt: timestampSchema,
 });
 export type ShopPublic = z.infer<typeof shopPublicSchema>;
@@ -72,7 +84,14 @@ export type ShopLocationInput = z.infer<typeof shopLocationInputSchema>;
 /** A new shop comes with its location, so it can appear in the near-me feed at once. */
 export const createShopWithLocationInputSchema = createShopInputSchema.extend({
   location: shopLocationInputSchema,
+  hours: shopHoursSchema.optional(),
 });
+
+export const updateShopInputSchema = createShopInputSchema
+  .omit({ categoryId: true })
+  .partial()
+  .extend({ hours: shopHoursSchema.optional() });
+export type UpdateShopInput = z.infer<typeof updateShopInputSchema>;
 export type CreateShopWithLocationInput = z.infer<typeof createShopWithLocationInputSchema>;
 
 /** A field agent's verification visit. */

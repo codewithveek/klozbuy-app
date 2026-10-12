@@ -17,6 +17,7 @@ export const ERROR_STATUS = {
   NOT_SHOP_OWNER: 403,
   LISTING_NOT_FOUND: 404,
   CATEGORY_NOT_FOUND: 400,
+  REQUEST_NOT_FOUND: 404,
 } as const satisfies Record<ErrorCode, ContentfulStatusCode>;
 
 export function errorBody(code: ErrorCode, message: string, details?: unknown): ErrorResponse {

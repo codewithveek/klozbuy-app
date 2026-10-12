@@ -12,6 +12,7 @@
   "vars": {
     "ENVIRONMENT": "development",
     "API_URL": "http://localhost:8787",
+    "SITE_URL": "http://localhost:8081",
     "TRUSTED_ORIGINS": "http://localhost:8081,klozbuy://",
     "OTP_SENDER": "console",
   },
@@ -25,6 +26,7 @@
       "vars": {
         "ENVIRONMENT": "staging",
         "API_URL": "https://api.staging.klozbuy.com",
+        "SITE_URL": "https://staging.klozbuy.com",
         "TRUSTED_ORIGINS": "https://staging.klozbuy.com,klozbuy://",
         "COOKIE_DOMAIN": "staging.klozbuy.com",
         "OTP_SENDER": "termii",
@@ -48,6 +50,7 @@
       "vars": {
         "ENVIRONMENT": "production",
         "API_URL": "https://api.klozbuy.com",
+        "SITE_URL": "https://klozbuy.com",
         "TRUSTED_ORIGINS": "https://klozbuy.com,https://www.klozbuy.com,klozbuy://",
         "COOKIE_DOMAIN": "klozbuy.com",
         "OTP_SENDER": "termii",

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { idSchema, nairaSchema, timestampSchema } from './common';
-import { shopLocationSchema, shopSummarySchema } from './shops';
+import { shopHoursSchema, shopLocationSchema, shopSummarySchema } from './shops';
 
 export const LISTING_TYPES = ['product', 'service'] as const;
 export const CONDITIONS = ['new', 'uk_used', 'used', 'refurbished'] as const;
@@ -57,7 +57,11 @@ export type SetListingStatusInput = z.infer<typeof setListingStatusInputSchema>;
 
 /** The public listing page: the listing, its shop and where the shop is. */
 export const listingDetailSchema = listingSchema.extend({
-  shop: shopSummarySchema.extend({ location: shopLocationSchema.nullable() }),
+  shop: shopSummarySchema.extend({
+    location: shopLocationSchema.nullable(),
+    hours: shopHoursSchema,
+    activeListings: z.number().int().min(0),
+  }),
   category: z.object({ id: idSchema, slug: z.string(), name: z.string() }),
 });
 export type ListingDetail = z.infer<typeof listingDetailSchema>;

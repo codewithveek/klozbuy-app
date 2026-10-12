@@ -11,6 +11,7 @@ import {
   setListingStatus,
   updateListing,
 } from '@klozbuy/domain/catalog';
+import { recordView } from '@klozbuy/domain/leads';
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env';
 import { CACHE, cacheFor } from '../cache';
@@ -47,6 +48,10 @@ export const listingRoutes = new Hono<AppEnv>()
         c,
         await setListingStatus(c.var.ctx, c.req.valid('param').id, c.req.valid('json')),
       ),
+  )
+  // A listing page was opened; counted for the seller's figures.
+  .post('/:id/views', validate('param', idParam), async (c) =>
+    sendResult(c, await recordView(c.var.ctx, c.req.valid('param').id)),
   )
   .post('/:id/confirm-stock', validate('param', idParam), async (c) =>
     sendResult(c, await confirmStock(c.var.ctx, c.req.valid('param').id)),

@@ -1,9 +1,8 @@
 import type { DbExecutor } from '@klozbuy/db';
-import { areas, listingSearch, searchTerms } from '@klozbuy/db/schema';
-import { and, count, desc, eq, inArray, type SQL } from 'drizzle-orm';
+import { listingSearch, searchTerms } from '@klozbuy/db/schema';
+import { and, count, desc, eq, gte, inArray, lte, type SQL } from 'drizzle-orm';
 
 export type SearchRow = typeof listingSearch.$inferSelect;
-export type AreaRow = typeof areas.$inferSelect;
 type SearchInsert = typeof listingSearch.$inferInsert;
 
 export async function upsertSearchRow(db: DbExecutor, row: SearchInsert) {
@@ -27,22 +26,37 @@ export async function replaceTerms(
   await db.insert(searchTerms).values(terms.map((term) => ({ term, h3r7, listingId })));
 }
 
-export interface CandidateFilter {
-  resolution: 7 | 8;
-  cells: string[];
+export interface ListingFilter {
   categoryId?: string;
   verifiedOnly: boolean;
+  type?: SearchRow['type'];
+  condition?: NonNullable<SearchRow['condition']>;
+  minPrice?: number;
+  maxPrice?: number;
+}
+
+export interface CandidateFilter extends ListingFilter {
+  resolution: 7 | 8;
+  cells: string[];
+}
+
+/** Filters every listing query shares; each is skipped when not set. */
+function filterWhere(filter: ListingFilter): (SQL | undefined)[] {
+  return [
+    eq(listingSearch.status, 'active'),
+    filter.categoryId ? eq(listingSearch.categoryId, filter.categoryId) : undefined,
+    filter.verifiedOnly ? eq(listingSearch.verified, true) : undefined,
+    filter.type ? eq(listingSearch.type, filter.type) : undefined,
+    filter.condition ? eq(listingSearch.condition, filter.condition) : undefined,
+    filter.minPrice !== undefined ? gte(listingSearch.priceNgn, filter.minPrice) : undefined,
+    filter.maxPrice !== undefined ? lte(listingSearch.priceNgn, filter.maxPrice) : undefined,
+  ];
 }
 
 /** Active listings in the cells, filtered; served by the (h3, status, category) indexes. */
 function candidateWhere(filter: CandidateFilter): SQL | undefined {
   const cellColumn = filter.resolution === 8 ? listingSearch.h3r8 : listingSearch.h3r7;
-  return and(
-    inArray(cellColumn, filter.cells),
-    eq(listingSearch.status, 'active'),
-    filter.categoryId ? eq(listingSearch.categoryId, filter.categoryId) : undefined,
-    filter.verifiedOnly ? eq(listingSearch.verified, true) : undefined,
-  );
+  return and(inArray(cellColumn, filter.cells), ...filterWhere(filter));
 }
 
 const MAX_CANDIDATES = 400;
@@ -66,25 +80,10 @@ export async function findTermMatches(db: DbExecutor, terms: string[], cells: st
     .limit(MAX_CANDIDATES);
 }
 
-export async function findSearchRows(
-  db: DbExecutor,
-  listingIds: string[],
-  filter: Omit<CandidateFilter, 'cells' | 'resolution'>,
-) {
+export async function findSearchRows(db: DbExecutor, listingIds: string[], filter: ListingFilter) {
   if (listingIds.length === 0) return [];
   return db
     .select()
     .from(listingSearch)
-    .where(
-      and(
-        inArray(listingSearch.listingId, listingIds),
-        eq(listingSearch.status, 'active'),
-        filter.categoryId ? eq(listingSearch.categoryId, filter.categoryId) : undefined,
-        filter.verifiedOnly ? eq(listingSearch.verified, true) : undefined,
-      ),
-    );
-}
-
-export async function findAreas(db: DbExecutor): Promise<AreaRow[]> {
-  return db.select().from(areas);
+    .where(and(inArray(listingSearch.listingId, listingIds), ...filterWhere(filter)));
 }

@@ -56,15 +56,47 @@ const AREA_SEEDS: [key: string, slug: string, name: string, lat: number, lng: nu
   ['aogba', 'ogba', 'Ogba', 6.629, 3.341],
 ];
 
-export const AREAS = AREA_SEEDS.map(([key, slug, name, lat, lng]) => ({
-  id: fixedId(key),
-  slug,
-  name,
-  city: 'Lagos',
-  state: 'Lagos',
-  lat,
-  lng,
-}));
+/** Markets people already navigate by. Centre points are approximate; check before launch. */
+const MARKET_SEEDS: [
+  key: string,
+  slug: string,
+  name: string,
+  description: string,
+  lat: number,
+  lng: number,
+][] = [
+  ['myaba', 'yaba-market', 'Yaba Market', 'Food and household goods', 6.5154, 3.377],
+  ['mtejuosho', 'tejuosho-market', 'Tejuosho Market', 'Clothes, phones and food', 6.5085, 3.3683],
+  ['mcomputer', 'computer-village', 'Computer Village', 'Phones and laptops', 6.5965, 3.342],
+  ['mbalogun', 'balogun-market', 'Balogun Market', 'Fabrics and fashion', 6.4548, 3.3895],
+  ['malaba', 'alaba-market', 'Alaba International Market', 'Electronics', 6.4593, 3.1877],
+  ['mmile12', 'mile-12-market', 'Mile 12 Market', 'Food, wholesale', 6.605, 3.401],
+];
+
+const place = { city: 'Lagos', state: 'Lagos' };
+
+export const AREAS = [
+  ...AREA_SEEDS.map(([key, slug, name, lat, lng]) => ({
+    id: fixedId(key),
+    slug,
+    kind: 'area' as const,
+    name,
+    description: null,
+    ...place,
+    lat,
+    lng,
+  })),
+  ...MARKET_SEEDS.map(([key, slug, name, description, lat, lng]) => ({
+    id: fixedId(key),
+    slug,
+    kind: 'market' as const,
+    name,
+    description,
+    ...place,
+    lat,
+    lng,
+  })),
+];
 
 /** Inserts or refreshes categories and areas. Safe to run on every deploy. */
 export async function seedReferenceData(db: DbExecutor): Promise<void> {
@@ -77,5 +109,7 @@ export async function seedReferenceData(db: DbExecutor): Promise<void> {
   await db
     .insert(areas)
     .values(AREAS)
-    .onDuplicateKeyUpdate({ set: { name: sql.raw('values(`name`)') } });
+    .onDuplicateKeyUpdate({
+      set: { name: sql.raw('values(`name`)'), description: sql.raw('values(`description`)') },
+    });
 }

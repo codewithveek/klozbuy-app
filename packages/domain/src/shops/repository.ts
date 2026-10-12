@@ -59,3 +59,12 @@ export async function updateVerification(
 ) {
   await db.update(shops).set(values).where(eq(shops.id, shopId));
 }
+
+export async function updateShopRow(
+  db: DbExecutor,
+  id: string,
+  values: Partial<typeof shops.$inferInsert>,
+) {
+  if (Object.keys(values).length === 0) return;
+  await db.update(shops).set(values).where(eq(shops.id, id));
+}
