@@ -1,0 +1,5 @@
+# klozbuy.com is still served by Netlify from the previous Next.js app, which now lives in
+# legacy/next-app. Netlify builds it from there (with the env vars set in its dashboard)
+# until the new web app (apps/app, deployed to Cloudflare Workers) takes over the domain.
+[build]
+  base = "legacy/next-app"
