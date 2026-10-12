@@ -1,6 +1,7 @@
 import type { UserRole } from '@klozbuy/contracts';
 import type { Db } from '@klozbuy/db';
 import type { Id } from '@klozbuy/shared';
+import type { EventSink } from './events';
 
 export type UserId = Id<'User'>;
 
@@ -24,4 +25,6 @@ export interface Ctx {
   db: Db;
   clock: Clock;
   actor: Actor | null;
+  /** Announces changes; discovery keeps the feed current from these. */
+  publish: EventSink;
 }

@@ -5,7 +5,11 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./identity": "./src/identity/index.ts"
+    "./identity": "./src/identity/index.ts",
+    "./shops": "./src/shops/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./discovery": "./src/discovery/index.ts",
+    "./leads": "./src/leads/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

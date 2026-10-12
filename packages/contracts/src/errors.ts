@@ -12,6 +12,7 @@ export const ERROR_CODES = [
   'SHOP_NOT_FOUND',
   'NOT_SHOP_OWNER',
   'LISTING_NOT_FOUND',
+  'CATEGORY_NOT_FOUND',
 ] as const;
 
 export const errorCodeSchema = z.enum(ERROR_CODES);

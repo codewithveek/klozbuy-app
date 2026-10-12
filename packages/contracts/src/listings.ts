@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { idSchema, nairaSchema, timestampSchema } from './common';
+import { shopLocationSchema, shopSummarySchema } from './shops';
 
 export const LISTING_TYPES = ['product', 'service'] as const;
 export const CONDITIONS = ['new', 'uk_used', 'used', 'refurbished'] as const;
@@ -47,3 +48,18 @@ export const updateListingInputSchema = createListingInputSchema
   .partial()
   .extend({ stockStatus: stockStatusSchema.optional() });
 export type UpdateListingInput = z.infer<typeof updateListingInputSchema>;
+
+/** Status changes a seller can make: mark sold, hide, or put back on sale. */
+export const setListingStatusInputSchema = z.object({
+  status: z.enum(['active', 'sold', 'hidden']),
+});
+export type SetListingStatusInput = z.infer<typeof setListingStatusInputSchema>;
+
+/** The public listing page: the listing, its shop and where the shop is. */
+export const listingDetailSchema = listingSchema.extend({
+  shop: shopSummarySchema.extend({ location: shopLocationSchema.nullable() }),
+  category: z.object({ id: idSchema, slug: z.string(), name: z.string() }),
+});
+export type ListingDetail = z.infer<typeof listingDetailSchema>;
+
+export const listingListSchema = z.array(listingSchema);

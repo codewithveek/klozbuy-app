@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { idSchema, nairaSchema, pageSchema } from './common';
-import { conditionSchema, listingTypeSchema } from './listings';
+import { conditionSchema, listingTypeSchema, stockStatusSchema } from './listings';
 import { shopSummarySchema } from './shops';
 
 export const FEED_RADII_KM = [1, 3, 5, 10] as const;
@@ -22,6 +22,12 @@ export const nearbyFeedQuerySchema = z.object({
 });
 export type NearbyFeedQuery = z.infer<typeof nearbyFeedQuerySchema>;
 
+/** Text search near a point: the feed query plus the words typed. */
+export const searchQuerySchema = nearbyFeedQuerySchema.extend({
+  q: z.string().trim().min(2).max(80),
+});
+export type SearchQuery = z.infer<typeof searchQuerySchema>;
+
 export const feedItemSchema = z.object({
   listingId: idSchema,
   slug: z.string(),
@@ -30,6 +36,7 @@ export const feedItemSchema = z.object({
   priceNgn: nairaSchema,
   negotiable: z.boolean(),
   condition: conditionSchema.nullable(),
+  stockStatus: stockStatusSchema,
   landmark: z.string(),
   distanceKm: z.number().min(0),
   boosted: z.boolean(),

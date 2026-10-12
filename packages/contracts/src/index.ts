@@ -1,3 +1,5 @@
+export * from './areas';
+export * from './categories';
 export * from './common';
 export * from './errors';
 export * from './feed';

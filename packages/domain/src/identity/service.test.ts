@@ -4,6 +4,7 @@ import { createTestDb } from '@klozbuy/db/testing';
 import { createId } from '@klozbuy/shared';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import type { Ctx, UserId } from '../context';
+import { ignoreEvents } from '../events';
 import { getMe, recordConsent, updateProfile } from './service';
 
 const fixedClock = (iso: string) => ({ now: () => new Date(iso) });
@@ -16,7 +17,12 @@ const untouchedDb = new Proxy({} as Db, {
 });
 
 describe('identity services without a session', () => {
-  const ctx: Ctx = { db: untouchedDb, clock: fixedClock('2026-01-01T00:00:00Z'), actor: null };
+  const ctx: Ctx = {
+    db: untouchedDb,
+    clock: fixedClock('2026-01-01T00:00:00Z'),
+    actor: null,
+    publish: ignoreEvents,
+  };
 
   it('report UNAUTHENTICATED before touching the database', async () => {
     for (const result of [
@@ -51,6 +57,7 @@ describe.runIf(url)('identity services', () => {
       db: testDb.db,
       clock: fixedClock('2026-03-01T09:30:00.000Z'),
       actor: { userId, role: 'buyer' },
+      publish: ignoreEvents,
     };
   });
   afterAll(() => testDb.close());

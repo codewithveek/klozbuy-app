@@ -1,5 +1,5 @@
 import { userRoleSchema } from '@klozbuy/contracts';
-import { systemClock, type Actor, type Ctx } from '@klozbuy/domain';
+import { createEventSink, systemClock, type Actor, type Ctx } from '@klozbuy/domain';
 import { isId } from '@klozbuy/shared';
 import { createMiddleware } from 'hono/factory';
 import type { AppEnv } from '../app-env';
@@ -20,6 +20,7 @@ export const withActor = createMiddleware<AppEnv & { Variables: { ctx: Ctx } }>(
     db: c.var.db,
     clock: systemClock,
     actor: session ? toActor(session.user) : null,
+    publish: createEventSink(c.var.db),
   });
   await next();
 });

@@ -20,3 +20,8 @@ export type DomainResult<T, Code extends ErrorCode = ErrorCode> = Result<T, Doma
 export function requireActor(ctx: Ctx): DomainResult<Actor, 'UNAUTHENTICATED'> {
   return ctx.actor ? ok(ctx.actor) : err(domainError('UNAUTHENTICATED', 'Sign in to continue'));
 }
+
+export const notFound = <Code extends ErrorCode>(code: Code, what: string) =>
+  domainError(code, `${what} was not found`);
+
+export const forbidden = (message = 'You cannot change this') => domainError('FORBIDDEN', message);

@@ -7,8 +7,12 @@ import { handleError, handleNotFound } from './errors';
 import { requestLog } from './middleware/request-log';
 import { services, tidbCloud, type DbFactory } from './middleware/services';
 import { authRoutes } from './routes/auth';
+import { categoryRoutes, listingRoutes } from './routes/catalog';
+import { discoveryRoutes } from './routes/discovery';
+import { goRoutes } from './routes/go';
 import { healthRoutes } from './routes/health';
 import { meRoutes } from './routes/me';
+import { myShopRoutes, shopRoutes } from './routes/shops';
 
 export interface AppOptions {
   /** How each request gets its database. Defaults to TiDB Cloud's HTTP driver. */
@@ -32,7 +36,13 @@ export function createApp({ createDb = tidbCloud }: AppOptions = {}) {
     )
     .route('/health', healthRoutes)
     .route('/v1/auth', authRoutes)
-    .route('/v1/me', meRoutes);
+    .route('/v1/me/shops', myShopRoutes)
+    .route('/v1/me', meRoutes)
+    .route('/v1/categories', categoryRoutes)
+    .route('/v1/listings', listingRoutes)
+    .route('/v1/shops', shopRoutes)
+    .route('/v1', discoveryRoutes)
+    .route('/go', goRoutes);
   app.onError(handleError);
   app.notFound(handleNotFound);
   return app;

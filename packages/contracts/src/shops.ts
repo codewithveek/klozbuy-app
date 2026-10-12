@@ -24,15 +24,32 @@ export const shopSummarySchema = z.object({
 });
 export type ShopSummary = z.infer<typeof shopSummarySchema>;
 
-export const shopSchema = shopSummarySchema.extend({
+/** Where a shop is. Public: buyers walk there. */
+export const shopLocationSchema = z.object({
+  lat: z.number(),
+  lng: z.number(),
+  landmark: z.string(),
+  address: z.string().nullable(),
+  areaId: idSchema.nullable(),
+});
+export type ShopLocation = z.infer<typeof shopLocationSchema>;
+
+/** A shop's public page. The WhatsApp number is never included; buyers reach it through /go links. */
+export const shopPublicSchema = shopSummarySchema.extend({
   categoryId: idSchema,
   description: z.string().nullable(),
-  whatsappNumber: z.string(),
-  verificationStatus: verificationStatusSchema,
   verifiedAt: timestampSchema.nullable(),
+  location: shopLocationSchema.nullable(),
   createdAt: timestampSchema,
 });
-export type Shop = z.infer<typeof shopSchema>;
+export type ShopPublic = z.infer<typeof shopPublicSchema>;
+
+/** A shop as its owner sees it. */
+export const myShopSchema = shopPublicSchema.extend({
+  whatsappNumber: z.string(),
+  verificationStatus: verificationStatusSchema,
+});
+export type MyShop = z.infer<typeof myShopSchema>;
 
 /** Nigerian mobile numbers in international form, e.g. +2348012345678. */
 export const nigerianPhoneSchema = z.string().regex(/^\+234[789][01]\d{8}$/, 'Use the +234 format');
@@ -51,3 +68,16 @@ export const shopLocationInputSchema = pointSchema.extend({
   areaId: idSchema.optional(),
 });
 export type ShopLocationInput = z.infer<typeof shopLocationInputSchema>;
+
+/** A new shop comes with its location, so it can appear in the near-me feed at once. */
+export const createShopWithLocationInputSchema = createShopInputSchema.extend({
+  location: shopLocationInputSchema,
+});
+export type CreateShopWithLocationInput = z.infer<typeof createShopWithLocationInputSchema>;
+
+/** A field agent's verification visit. */
+export const recordVisitInputSchema = z.object({
+  result: verificationVisitResultSchema,
+  notes: z.string().trim().max(1000).optional(),
+});
+export type RecordVisitInput = z.infer<typeof recordVisitInputSchema>;

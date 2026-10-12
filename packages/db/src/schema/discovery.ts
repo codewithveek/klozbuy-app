@@ -1,4 +1,4 @@
-import { CONDITIONS, LISTING_STATUSES, LISTING_TYPES } from '@klozbuy/contracts';
+import { CONDITIONS, LISTING_STATUSES, LISTING_TYPES, STOCK_STATUSES } from '@klozbuy/contracts';
 import {
   boolean,
   double,
@@ -50,6 +50,8 @@ export const listingSearch = mysqlTable(
     negotiable: boolean().notNull(),
     condition: varchar({ length: 16, enum: CONDITIONS }),
     coverImageKey: varchar({ length: 255 }),
+    stockStatus: varchar({ length: 16, enum: STOCK_STATUSES }).notNull().default('in_stock'),
+    stockConfirmedAt: utcDatetime(),
     categoryId: id().notNull(),
     status: varchar({ length: 16, enum: LISTING_STATUSES }).notNull(),
     shopId: id().notNull(),

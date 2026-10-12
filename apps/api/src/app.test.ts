@@ -76,3 +76,36 @@ describe('API worker', () => {
     expect(error.message).not.toContain('short');
   });
 });
+
+describe('marketplace routes without a database', () => {
+  it('validates feed queries', async () => {
+    const response = await app.request('/v1/feed/nearby?lat=6.5&radiusKm=2', {}, testEnv());
+    expect(response.status).toBe(400);
+    expect(await errorOf(response)).toMatchObject({ code: 'VALIDATION_FAILED' });
+  });
+
+  it('rejects unknown lead channels', async () => {
+    const response = await app.request('/go/telegram/a1B2c3D4e5F6g7H8', {}, testEnv());
+    expect(response.status).toBe(400);
+  });
+
+  it('needs a session to create a listing', async () => {
+    const body = {
+      shopId: 'a1B2c3D4e5F6g7H8',
+      type: 'product',
+      title: 'Kettle',
+      priceNgn: 9000,
+      categoryId: 'a1B2c3D4e5F6g7H8',
+    };
+    const response = await app.request(
+      '/v1/listings',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+      testEnv(),
+    );
+    expect(response.status).toBe(401);
+  });
+});
