@@ -27,6 +27,8 @@ const useStyles = createStyles((t) => ({
     borderColor: t.colors.focusRing,
   },
   invalid: { borderColor: t.colors.dangerFg, backgroundColor: t.colors.dangerBg },
+  multiline: { alignItems: 'flex-start', paddingVertical: t.spacing[2] },
+  multilineInput: { minHeight: 96, textAlignVertical: 'top' },
   input: {
     flex: 1,
     alignSelf: 'stretch',
@@ -59,6 +61,8 @@ export interface KlozInputProps {
   autoFocus?: boolean;
   editable?: boolean;
   onSubmitEditing?: () => void;
+  /** Several lines, for descriptions. */
+  multiline?: boolean;
   testID?: string;
 }
 
@@ -71,6 +75,24 @@ function fieldId(label: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')}`;
+}
+
+function FieldLabel({ label, id }: { label?: string; id?: string }) {
+  if (!label) return null;
+  return (
+    <KlozText variant="label" nativeID={id}>
+      {label}
+    </KlozText>
+  );
+}
+
+function FieldAffix({ leading, prefix }: Pick<KlozInputProps, 'leading' | 'prefix'>) {
+  return (
+    <>
+      {leading && <KlozIcon name={leading} tone="secondary" />}
+      {prefix && <KlozText tone="secondary">{prefix}</KlozText>}
+    </>
+  );
 }
 
 function FieldMessage({ hint, error }: Pick<KlozInputProps, 'hint' | 'error'>) {
@@ -96,32 +118,35 @@ export function KlozInput({
   prefix,
   leading,
   type = 'text',
+  multiline = false,
   ...inputProps
 }: KlozInputProps) {
   const styles = useStyles();
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
   const labelId = id ?? (label ? fieldId(label) : undefined);
+  const invalid = error !== undefined;
   return (
     <KlozView gap={1}>
-      {label && (
-        <KlozText variant="label" nativeID={labelId}>
-          {label}
-        </KlozText>
-      )}
+      <FieldLabel label={label} id={labelId} />
       <KlozView
-        style={[styles.field, focused && styles.focused, error !== undefined && styles.invalid]}
+        style={[
+          styles.field,
+          multiline && styles.multiline,
+          focused && styles.focused,
+          invalid && styles.invalid,
+        ]}
       >
-        {leading && <KlozIcon name={leading} tone="secondary" />}
-        {prefix && <KlozText tone="secondary">{prefix}</KlozText>}
+        <FieldAffix leading={leading} prefix={prefix} />
         <TextInput
           {...INPUT_TYPE_PROPS[type]}
           {...inputProps}
-          aria-labelledby={label ? labelId : undefined}
+          aria-labelledby={labelId}
           placeholderTextColor={theme.colors.textTertiary}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={styles.input}
+          multiline={multiline}
+          style={[styles.input, multiline && styles.multilineInput]}
         />
       </KlozView>
       <FieldMessage hint={hint} error={error} />

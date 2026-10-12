@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { authHeaders } from '../features/identity/auth-client';
+import { LocationProvider } from '../features/location/LocationProvider';
 import { API_URL } from './config';
 
 /**
@@ -21,7 +22,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider scheme={Platform.OS === 'web' ? 'light' : 'system'}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <ApiClientProvider client={apiClient}>{children}</ApiClientProvider>
+          <ApiClientProvider client={apiClient}>
+            <LocationProvider>{children}</LocationProvider>
+          </ApiClientProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </ThemeProvider>

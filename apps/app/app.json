@@ -6,11 +6,25 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "ios": { "bundleIdentifier": "com.klozbuy.app", "supportsTablet": false },
-    "android": { "package": "com.klozbuy.app" },
-    "web": { "output": "server", "bundler": "metro" },
+    "ios": {
+      "bundleIdentifier": "com.klozbuy.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.klozbuy.app"
+    },
+    "web": {
+      "output": "server",
+      "bundler": "metro"
+    },
     "plugins": [
-      ["expo-router", { "unstable_useServerRendering": true }],
+      [
+        "expo-router",
+        {
+          "unstable_useServerRendering": true,
+          "unstable_useServerDataLoaders": true
+        }
+      ],
       "expo-secure-store",
       "expo-font"
     ]

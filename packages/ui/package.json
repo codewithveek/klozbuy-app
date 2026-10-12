@@ -29,5 +29,8 @@
     "react-native-web": "~0.21.0",
     "typescript": "~6.0.3",
     "vitest": "^5.0.4"
+  },
+  "dependencies": {
+    "@klozbuy/shared": "workspace:*"
   }
 }

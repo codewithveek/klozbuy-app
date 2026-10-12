@@ -1,11 +1,8 @@
-import {
-  errorResponseSchema,
-  meSchema,
-  type Me,
-  type UpdateProfileInput,
-} from '@klozbuy/contracts';
+import { errorResponseSchema } from '@klozbuy/contracts';
 import type { z } from 'zod';
+import { catalogEndpoints, discoveryEndpoints, meEndpoints, shopEndpoints } from './endpoints';
 import { ApiError } from './errors';
+import type { RequestOptions } from './request';
 
 export interface ApiClientOptions {
   /** e.g. https://api.klozbuy.com */
@@ -13,11 +10,6 @@ export interface ApiClientOptions {
   /** Extra headers per request; native apps send the session cookie this way. */
   headers?: () => Record<string, string> | Promise<Record<string, string>>;
   fetch?: typeof fetch;
-}
-
-interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-  body?: unknown;
 }
 
 async function toApiError(response: Response): Promise<ApiError> {
@@ -62,12 +54,11 @@ export function createApiClient({ baseUrl, headers, fetch: fetchImpl = fetch }: 
   }
 
   return {
-    me: {
-      get: (): Promise<Me> => request(meSchema, '/v1/me'),
-      update: (input: UpdateProfileInput): Promise<Me> =>
-        request(meSchema, '/v1/me', { method: 'PATCH', body: input }),
-      recordConsent: (): Promise<Me> => request(meSchema, '/v1/me/consent', { method: 'POST' }),
-    },
+    baseUrl,
+    me: meEndpoints(request),
+    catalog: catalogEndpoints(request),
+    shops: shopEndpoints(request),
+    discovery: discoveryEndpoints(request),
   };
 }
 

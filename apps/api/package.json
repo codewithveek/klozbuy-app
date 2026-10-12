@@ -11,7 +11,8 @@
     "build": "wrangler deploy --dry-run --outdir dist --env=\"\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "dev:local": "tsx scripts/local.ts"
+    "dev:local": "tsx scripts/local.ts",
+    "demo-data": "tsx scripts/demo-data.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.1",

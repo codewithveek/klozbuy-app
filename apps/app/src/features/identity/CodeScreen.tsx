@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { AppHeader } from '../../lib/AppHeader';
 import { Page } from '../../lib/Page';
+import { safeNext } from '../../lib/format';
 import { formatLocalPhone, toInternationalPhone } from './phone';
 import { useSendCode, useVerifyCode } from './use-sign-in';
 
@@ -14,7 +15,8 @@ const CODE_LENGTH = 6;
 export function CodeScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ phone?: string }>();
+  const params = useLocalSearchParams<{ phone?: string; next?: string }>();
+  const next = safeNext(params.next);
   const phone = toInternationalPhone(params.phone ?? '');
   const [code, setCode] = useState('');
   const verify = useVerifyCode();
@@ -29,7 +31,7 @@ export function CodeScreen() {
     if (!(await verify.start(phone, code))) return;
     // New accounts have no name yet; ask for one before going home.
     const me = queryClient.getQueryData<Me | null>(meQueryKey);
-    router.replace(me?.name ? '/' : '/sign-in/name');
+    router.replace(me?.name ? next : { pathname: '/sign-in/name', params: { next } });
   }
 
   if (!phone) {

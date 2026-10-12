@@ -14,7 +14,7 @@ packages/
   shared/        Pure utilities: IDs, money, text, H3 geo cells. Depends on nothing else.
   contracts/     Zod schemas shared by the API and the app (the API contract)
   db/            Drizzle schema, migrations and the TiDB client
-  domain/        Business logic, one folder per module (identity so far)
+  domain/        Business logic, one folder per module: identity, shops, catalog, discovery, leads
   api-client/    Typed client and React Query hooks for the app
   ui/            Kloz components: tokens, theme, KlozText, KlozView, KlozTap, KlozButton…
   config/        Shared TypeScript and ESLint config
@@ -36,6 +36,7 @@ pnpm install
 # A local TiDB (the same engine as TiDB Cloud)
 docker run -d --name klozbuy-tidb -p 4000:4000 pingcap/tidb:v8.5.3
 DATABASE_URL=mysql://root@127.0.0.1:4000/klozbuy_local pnpm db:setup:local
+pnpm --filter @klozbuy/api demo-data   # optional: five shops and listings around Yaba
 
 # API on http://localhost:8787 (Node, against the local TiDB)
 pnpm dev:api
@@ -45,7 +46,7 @@ cp apps/app/.env.example apps/app/.env.local
 pnpm dev:web
 ```
 
-Sign in with any Nigerian mobile number (for example 0803 555 1234). In development no SMS is sent: the code is printed in the API's terminal.
+Open http://localhost:8081 for the near-me feed. To sell, tap **Sell**: sign in with any Nigerian mobile number (for example 0803 555 1234; in development no SMS is sent and the code is printed in the API's terminal), open a shop and add listings.
 
 Why the API runs in Node locally: the deployed worker talks to TiDB Cloud over its HTTP driver, which a local TiDB does not serve. `pnpm dev:api` runs the same Hono app with a plain MySQL connection instead. To run the real worker in `wrangler dev` against a TiDB Cloud dev cluster, copy `apps/api/.dev.vars.example` to `.dev.vars` and run `pnpm --filter @klozbuy/api dev`.
 

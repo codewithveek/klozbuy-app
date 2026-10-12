@@ -1,13 +1,15 @@
 import { useMe, useUpdateProfile } from '@klozbuy/api-client';
 import { updateProfileInputSchema } from '@klozbuy/contracts';
 import { KlozButton, KlozInput, KlozText, KlozView } from '@klozbuy/ui';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { AppHeader } from '../../lib/AppHeader';
+import { safeNext } from '../../lib/format';
 import { Page } from '../../lib/Page';
 
 export function NameScreen() {
   const router = useRouter();
+  const next = safeNext(useLocalSearchParams<{ next?: string }>().next);
   const me = useMe();
   const [name, setName] = useState('');
   const [error, setError] = useState<string | undefined>();
@@ -21,7 +23,7 @@ export function NameScreen() {
     }
     setError(undefined);
     await update.mutateAsync(parsed.data).then(
-      () => router.replace('/'),
+      () => router.replace(next),
       () => setError("We couldn't save your name. Try again."),
     );
   }
@@ -59,7 +61,7 @@ export function NameScreen() {
             Save and continue
           </KlozButton>
           {me.data?.name ? (
-            <KlozButton variant="ghost" href="/" fullWidth>
+            <KlozButton variant="ghost" href={next} fullWidth>
               Keep {me.data.name}
             </KlozButton>
           ) : null}

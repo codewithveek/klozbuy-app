@@ -1,13 +1,15 @@
 import { KlozButton, KlozInput, KlozText, KlozView } from '@klozbuy/ui';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { AppHeader } from '../../lib/AppHeader';
 import { Page } from '../../lib/Page';
+import { safeNext } from '../../lib/format';
 import { toInternationalPhone } from './phone';
 import { useSendCode } from './use-sign-in';
 
 export function PhoneScreen() {
   const router = useRouter();
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const [input, setInput] = useState('');
   const sendCode = useSendCode();
 
@@ -17,7 +19,8 @@ export function PhoneScreen() {
       sendCode.setError('Enter a Nigerian mobile number, like 0803 123 4567.');
       return;
     }
-    if (await sendCode.start(phone)) router.push({ pathname: '/sign-in/code', params: { phone } });
+    if (await sendCode.start(phone))
+      router.push({ pathname: '/sign-in/code', params: { phone, next: safeNext(next) } });
   }
 
   return (

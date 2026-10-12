@@ -1,4 +1,8 @@
+export { KlozBadge, type KlozBadgeProps } from './components/KlozBadge';
 export { KlozButton, type KlozButtonProps } from './components/KlozButton';
+export { KlozChip, type KlozChipProps } from './components/KlozChip';
+export { KlozPrice, type KlozPriceProps } from './components/KlozPrice';
+export { KlozSkeleton, type KlozSkeletonProps } from './components/KlozSkeleton';
 export { KlozInput, type KlozInputProps } from './components/KlozInput';
 export type { InputType } from './components/inputTypes';
 export { KlozIcon, type IconName, type KlozIconProps } from './primitives/KlozIcon';
