@@ -16,3 +16,6 @@ web-build/
 !.env.example
 .dev.vars
 !.dev.vars.example
+
+# Netlify CLI local state
+.netlify
