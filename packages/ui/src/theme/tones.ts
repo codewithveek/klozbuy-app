@@ -10,7 +10,9 @@ export type TextTone =
   | 'on-action'
   | 'danger'
   | 'warning'
-  | 'info';
+  | 'info'
+  | 'rose'
+  | 'rating';
 
 export const TONE_COLORS: Record<TextTone, ColorToken> = {
   primary: 'textPrimary',
@@ -22,4 +24,6 @@ export const TONE_COLORS: Record<TextTone, ColorToken> = {
   danger: 'dangerFg',
   warning: 'warningFg',
   info: 'infoFg',
+  rose: 'roseFg',
+  rating: 'ratingStar',
 };

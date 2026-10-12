@@ -68,6 +68,7 @@ async function listingFigures(
       listingId: row.id,
       slug: row.slug,
       title: row.title,
+      type: row.type,
       condition: row.condition,
       priceNgn: row.priceNgn,
       stockStatus: row.stockStatus,

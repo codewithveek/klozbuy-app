@@ -9,13 +9,16 @@ import { createVariants } from '../theme/createVariants';
 import { useTheme } from '../theme/ThemeProvider';
 import { TONE_COLORS } from '../theme/tones';
 
-type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+type Variant =
+  'primary' | 'secondary' | 'outline' | 'brand-outline' | 'inverse' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 const LABEL_TONE: Record<Variant, TextTone> = {
   primary: 'on-action',
   secondary: 'primary',
   outline: 'primary',
+  'brand-outline': 'brand',
+  inverse: 'inverse',
   ghost: 'primary',
   danger: 'on-action',
 };
@@ -36,6 +39,12 @@ const useContainer = createVariants((t) => ({
       primary: { backgroundColor: t.colors.actionPrimary },
       secondary: { backgroundColor: t.colors.bgSubtle },
       outline: { backgroundColor: t.colors.bgSurface, borderColor: t.colors.borderStrong },
+      'brand-outline': {
+        backgroundColor: t.colors.bgSurface,
+        borderColor: t.colors.actionPrimary,
+        borderWidth: 1.5,
+      },
+      inverse: { backgroundColor: t.colors.bgInverse },
       ghost: { backgroundColor: 'transparent' },
       danger: { backgroundColor: t.colors.dangerSolid },
     },
@@ -44,9 +53,14 @@ const useContainer = createVariants((t) => ({
       md: { minHeight: t.control.md, paddingHorizontal: t.spacing[4] },
       lg: { minHeight: t.control.lg, paddingHorizontal: t.spacing[5] },
     },
-    width: { auto: {}, full: { alignSelf: 'stretch' as const } },
+    width: {
+      auto: {},
+      full: { alignSelf: 'stretch' as const },
+      grow: { flexGrow: 1, flexShrink: 1, flexBasis: 0 },
+    },
+    shape: { rounded: {}, pill: { borderRadius: t.radius.full } },
   },
-  defaults: { variant: 'primary', size: 'md', width: 'auto' },
+  defaults: { variant: 'primary', size: 'md', width: 'auto', shape: 'rounded' },
 }));
 
 /** Pressed and hovered look: primary darkens, neutral controls move to bg-pressed. */
@@ -54,6 +68,8 @@ const useActive = createStyles((t) => ({
   primary: { backgroundColor: t.colors.actionPrimaryPressed },
   secondary: { backgroundColor: t.colors.bgPressed },
   outline: { backgroundColor: t.colors.bgPressed },
+  'brand-outline': { backgroundColor: t.colors.bgBrandSubtle },
+  inverse: { opacity: 0.88 },
   ghost: { backgroundColor: t.colors.bgPressed },
   danger: { opacity: 0.88 },
   hidden: { opacity: 0 },
@@ -69,6 +85,12 @@ export interface KlozButtonProps {
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
+  /** Share a row equally with the buttons beside it. */
+  grow?: boolean;
+  /** Pill for header actions; rounded (default) elsewhere. */
+  shape?: 'rounded' | 'pill';
+  /** Required for buttons whose label is not the whole story, e.g. "Call" → "Call Tunde Gadgets". */
+  accessibilityLabel?: string;
   href?: string;
   onPress?: () => void;
   testID?: string;
@@ -111,6 +133,8 @@ function Spinner({ tone }: { tone: TextTone }) {
   );
 }
 
+const widthOf = (full?: boolean, grow?: boolean) => (full ? 'full' : grow ? 'grow' : 'auto');
+
 export function KlozButton({
   variant = 'primary',
   size = 'md',
@@ -119,12 +143,16 @@ export function KlozButton({
   loading = false,
   disabled = false,
   fullWidth,
+  grow,
+  shape = 'rounded',
+  accessibilityLabel,
   href,
   onPress,
   testID,
   children,
 }: KlozButtonProps) {
-  const container = useContainer({ variant, size, width: fullWidth ? 'full' : 'auto' });
+  const width = widthOf(fullWidth, grow);
+  const container = useContainer({ variant, size, width, shape });
   const active = useActive();
   const tone = LABEL_TONE[variant];
   return (
@@ -133,6 +161,7 @@ export function KlozButton({
       onPress={loading ? undefined : onPress}
       disabled={disabled}
       testID={testID}
+      accessibilityLabel={accessibilityLabel}
       busy={loading}
       style={({ pressed, hovered }) => [
         container,

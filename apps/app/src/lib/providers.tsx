@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { authHeaders } from '../features/identity/auth-client';
 import { LocationProvider } from '../features/location/LocationProvider';
+import { SavedProvider } from '../features/saved/SavedProvider';
 import { API_URL } from './config';
 
 /**
@@ -23,7 +24,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ApiClientProvider client={apiClient}>
-            <LocationProvider>{children}</LocationProvider>
+            <LocationProvider>
+              <SavedProvider>{children}</SavedProvider>
+            </LocationProvider>
           </ApiClientProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

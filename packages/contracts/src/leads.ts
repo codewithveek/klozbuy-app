@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { idSchema, nairaSchema, timestampSchema } from './common';
-import { conditionSchema, listingStatusSchema, stockStatusSchema } from './listings';
+import {
+  conditionSchema,
+  listingStatusSchema,
+  listingTypeSchema,
+  stockStatusSchema,
+} from './listings';
 import { shopSummarySchema } from './shops';
 
 export const LEAD_CHANNELS = ['whatsapp', 'call', 'directions'] as const;
@@ -37,6 +42,7 @@ export const shopInsightsSchema = z.object({
       listingId: idSchema,
       slug: z.string(),
       title: z.string(),
+      type: listingTypeSchema,
       condition: conditionSchema.nullable(),
       priceNgn: nairaSchema,
       stockStatus: stockStatusSchema,

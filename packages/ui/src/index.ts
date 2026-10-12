@@ -1,3 +1,16 @@
+export { KlozAvatar, avatarTone, initials, type KlozAvatarProps } from './components/KlozAvatar';
+export { KlozIconButton, type KlozIconButtonProps } from './components/KlozIconButton';
+export {
+  KlozMenu,
+  KlozPopover,
+  type KlozMenuProps,
+  type KlozPopoverProps,
+  type MenuOption,
+} from './components/KlozMenu';
+export { KlozSegmented, type KlozSegmentedProps } from './components/KlozSegmented';
+export { KlozSwitch, type KlozSwitchProps } from './components/KlozSwitch';
+export { KlozGrid, GRID_CSS, type KlozGridProps } from './layout/KlozGrid';
+export { RESPONSIVE_CSS, type Breakpoint, type ResponsiveRule } from './layout/rules';
 export { KlozBadge, type KlozBadgeProps } from './components/KlozBadge';
 export { KlozButton, type KlozButtonProps } from './components/KlozButton';
 export { KlozChip, type KlozChipProps } from './components/KlozChip';

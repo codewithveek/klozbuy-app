@@ -71,6 +71,11 @@ const light = {
   ratingStar: '#f2a900',
   /** Backdrop behind sheets and dialogs. */
   scrim: 'rgba(18, 26, 21, 0.5)',
+  /** Avatars only: a fourth tint so neighbouring shops look different. */
+  roseBg: '#f7e1ea',
+  roseFg: '#7a2148',
+  /** The "something new" dot on the bell. */
+  attention: '#e0571f',
 };
 
 export type ColorToken = keyof typeof light;
@@ -103,6 +108,9 @@ const dark: ColorScheme = {
   focusRing: '#7cb4f2',
   ratingStar: '#f2c24e',
   scrim: 'rgba(0, 0, 0, 0.6)',
+  roseBg: '#3a1726',
+  roseFg: '#f2a7c6',
+  attention: '#f07a45',
 };
 
 export const colors: { light: ColorScheme; dark: ColorScheme } = { light, dark };

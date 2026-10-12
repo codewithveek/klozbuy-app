@@ -3,7 +3,6 @@ import { KlozButton, KlozText, KlozView } from '@klozbuy/ui';
 import { Redirect } from 'expo-router';
 import { AppHeader } from '../../lib/AppHeader';
 import { Page } from '../../lib/Page';
-import { HeaderActions } from '../identity/HeaderActions';
 import { CreateShopForm } from './CreateShopForm';
 
 function SignInFirst() {
@@ -28,7 +27,7 @@ export function SellScreen() {
   if (firstShop) return <Redirect href={`/sell/${firstShop.id}`} />;
   const loading = me.isPending || (!!me.data && shops.isPending);
   return (
-    <Page width="narrow" header={<AppHeader actions={<HeaderActions />} />}>
+    <Page width="narrow" header={<AppHeader />}>
       <KlozView gap={6} py={4}>
         <KlozView gap={2}>
           <KlozText variant="title-1" level={1}>

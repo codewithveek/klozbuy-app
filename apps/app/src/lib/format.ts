@@ -46,3 +46,14 @@ export function verifiedLine(verifiedAt: string | null): string {
 export function safeNext(next: string | undefined, fallback = '/'): string {
   return next && next.startsWith('/') && !next.startsWith('//') ? next : fallback;
 }
+
+/** "just now", "30 minutes ago", "5 hours ago", "3 days ago". */
+export function timeAgo(iso: string, now: Date): string {
+  const minutes = Math.floor((now.getTime() - Date.parse(iso)) / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? 'yesterday' : `${days} days ago`;
+}

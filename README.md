@@ -36,7 +36,7 @@ pnpm install
 # A local TiDB (the same engine as TiDB Cloud)
 docker run -d --name klozbuy-tidb -p 4000:4000 pingcap/tidb:v8.5.3
 DATABASE_URL=mysql://root@127.0.0.1:4000/klozbuy_local pnpm db:setup:local
-pnpm --filter @klozbuy/api demo-data   # optional: five shops and listings around Yaba
+pnpm --filter @klozbuy/api demo-data   # optional: shops, listings, views, chats and requests around Yaba
 
 # API on http://localhost:8787 (Node, against the local TiDB)
 pnpm dev:api
@@ -46,7 +46,11 @@ cp apps/app/.env.example apps/app/.env.local
 pnpm dev:web
 ```
 
-Open http://localhost:8081 for the near-me feed. To sell, tap **Sell**: sign in with any Nigerian mobile number (for example 0803 555 1234; in development no SMS is sent and the code is printed in the API's terminal), open a shop and add listings.
+Open http://localhost:8081 for the near-me feed. Sign in with any Nigerian mobile number (in development no SMS is sent; the code is printed in the API's terminal). With the demo data, 0803 111 0001 is the seller of Tunde Gadgets (open **Sell on Klozbuy** for the dashboard) and 0803 999 0001 is a buyer with requests and chats. A new number can open a shop and add listings.
+
+The screens follow the mockups: buyers get the near-me feed with filters, services, markets, requests and offers, saved items and chats; sellers get an overview with figures from real views and leads, listings, leads, buyer requests (send an offer), shop profile with opening hours, and verification. Reviews, photos, boosts and payments aren't built yet and say so on screen.
+
+Layout that changes with the screen width uses `responsive` rules on `KlozView` (see `packages/ui/src/layout/rules.ts`): CSS media queries on web, so the server render fits every width, and the window width on native.
 
 Why the API runs in Node locally: the deployed worker talks to TiDB Cloud over its HTTP driver, which a local TiDB does not serve. `pnpm dev:api` runs the same Hono app with a plain MySQL connection instead. To run the real worker in `wrangler dev` against a TiDB Cloud dev cluster, copy `apps/api/.dev.vars.example` to `.dev.vars` and run `pnpm --filter @klozbuy/api dev`.
 

@@ -1,9 +1,7 @@
 import { gridDisk, latLngToCell } from 'h3-js';
+import type { Point } from './distance';
 
-export interface Point {
-  readonly lat: number;
-  readonly lng: number;
-}
+export { haversineKm, type Point } from './distance';
 
 /** Cell sizes used for search: r7 cells are about 1.2 km across, r8 about 0.5 km. */
 export const SEARCH_RESOLUTIONS = { wide: 7, close: 8 } as const;
@@ -40,19 +38,6 @@ export function searchArea(point: Point, radiusKm: number): SearchArea {
   const rings = radiusKm <= 3 ? 2 : Math.ceil(radiusKm / 1.2);
   const origin = latLngToCell(point.lat, point.lng, SEARCH_RESOLUTIONS.wide);
   return { resolution: SEARCH_RESOLUTIONS.wide, cells: gridDisk(origin, rings) };
-}
-
-const EARTH_RADIUS_KM = 6371;
-const toRadians = (degrees: number): number => (degrees * Math.PI) / 180;
-
-/** Great-circle distance in kilometres. */
-export function haversineKm(a: Point, b: Point): number {
-  const dLat = toRadians(b.lat - a.lat);
-  const dLng = toRadians(b.lng - a.lng);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(a.lat)) * Math.cos(toRadians(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h));
 }
 
 /** Rounds a buyer's point to about 100 m, for privacy and so nearby buyers share cache keys. */

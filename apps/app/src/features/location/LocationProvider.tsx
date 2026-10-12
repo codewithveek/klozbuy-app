@@ -1,5 +1,5 @@
 import { useAreas } from '@klozbuy/api-client';
-import type { Area, PointInput } from '@klozbuy/contracts';
+import type { Area, FEED_RADII_KM, PointInput } from '@klozbuy/contracts';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { getDeviceLocation } from './device-location';
 import { loadSavedArea, saveArea } from './saved-area';
@@ -20,8 +20,13 @@ export const DEFAULT_LOCATION: BuyerLocation = {
   areaSlug: 'yaba',
 };
 
+export type RadiusKm = (typeof FEED_RADII_KM)[number];
+
 interface LocationContextValue {
   location: BuyerLocation;
+  /** How far the buyer will go; the header and the distance filter share it. */
+  radiusKm: RadiusKm;
+  setRadius: (km: RadiusKm) => void;
   chooseArea: (area: Area) => void;
   locateDevice: () => Promise<boolean>;
 }
@@ -38,6 +43,7 @@ const fromArea = (area: Area): BuyerLocation => ({
 
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [radiusKm, setRadius] = useState<RadiusKm>(3);
   const areas = useAreas();
 
   // Restore the saved area after hydration, so the server and first client render agree.
@@ -50,6 +56,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const value = useMemo<LocationContextValue>(
     () => ({
       location,
+      radiusKm,
+      setRadius,
       chooseArea: (area) => {
         saveArea(area.slug);
         setLocation(fromArea(area));
@@ -63,7 +71,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           () => false,
         ),
     }),
-    [location],
+    [location, radiusKm],
   );
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;
 }

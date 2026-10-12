@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native';
+import type { ResponsiveRule } from '../layout/rules';
+import { useResponsive } from '../layout/useRule';
 import { createStyles } from '../theme/createStyles';
 import type { Theme } from '../theme/themes';
 import { radius, spacing, type ColorToken, type RadiusKey, type SpaceKey } from '../tokens';
@@ -90,6 +92,8 @@ export interface KlozViewProps extends Pick<
   border?: boolean;
   /** Landmark role on web. */
   as?: Landmark;
+  /** Layout that changes with the screen width; see layout/rules.ts. */
+  responsive?: ResponsiveRule | ResponsiveRule[];
   /** For building Kloz components only; screens use the props above. */
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
@@ -130,12 +134,16 @@ export function KlozView({
   nativeID,
   onLayout,
   pointerEvents,
+  responsive,
   ...atomProps
 }: KlozViewProps) {
   const atoms = useAtoms();
-  const composed = [...atomNames(atomProps).map((name) => atoms[name]), style];
+  const rule = useResponsive(responsive);
+  if (!rule.visible) return null;
+  const composed = [...atomNames(atomProps).map((name) => atoms[name]), style, rule.style];
   return (
     <View
+      dataSet={rule.dataSet}
       testID={testID}
       nativeID={nativeID}
       onLayout={onLayout}

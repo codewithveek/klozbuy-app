@@ -1,10 +1,13 @@
-import { colors, FONT_FAMILY } from '@klozbuy/ui';
+import { colors, FONT_FAMILY, GRID_CSS, RESPONSIVE_CSS } from '@klozbuy/ui';
 import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
 const FONT_URL = '/fonts/PlusJakartaSans-Variable.woff2';
 
-/** Document-level CSS: the font, the page background and a visible keyboard focus ring. */
+/**
+ * Document-level CSS: the font, the page background, a visible keyboard focus ring, and the
+ * media queries behind Kloz's responsive layout (so the server render fits every width).
+ */
 const globalCss = `
 @font-face {
   font-family: '${FONT_FAMILY}';
@@ -14,6 +17,8 @@ const globalCss = `
 }
 body { background-color: ${colors.light.bgCanvas}; }
 :focus-visible { outline: 2px solid ${colors.light.focusRing}; outline-offset: 2px; }
+${RESPONSIVE_CSS}
+${GRID_CSS}
 `;
 
 /** Wraps every server-rendered page. Runs on the server only. */

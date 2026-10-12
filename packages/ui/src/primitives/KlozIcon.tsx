@@ -5,8 +5,8 @@ import { TONE_COLORS, type TextTone } from '../theme/tones';
 
 export interface KlozIconProps {
   name: IconName;
-  /** 14 in badges, 16 inline with small text, 20 in controls (default), 24 on its own. */
-  size?: 14 | 16 | 20 | 24;
+  /** 14 in badges, 16 inline with small text, 20 in controls (default), 24 on its own, 48 as a photo placeholder. */
+  size?: 14 | 16 | 20 | 24 | 48;
   /** Match the text it sits beside. Default 'primary'. */
   tone?: TextTone;
   /** Give a label only when the icon carries meaning on its own. */

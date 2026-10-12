@@ -14,3 +14,4 @@ export {
   type OpeningHours,
 } from './hours';
 export { listingMessage, offerMessage } from './messages';
+export { haversineKm, type Point } from './distance';

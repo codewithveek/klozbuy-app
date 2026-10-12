@@ -46,10 +46,11 @@ export function useAreas() {
 }
 
 /** The near-me feed, a page at a time. */
-export function useNearbyFeed(input: Omit<NearbyFeedQuery, 'cursor'>) {
+export function useNearbyFeed(input: Omit<NearbyFeedQuery, 'cursor'>, enabled = true) {
   const api = useApiClient();
   return useInfiniteQuery({
     queryKey: keys.feed(input),
+    enabled,
     queryFn: ({ pageParam }) => api.discovery.nearby({ ...input, cursor: pageParam }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,

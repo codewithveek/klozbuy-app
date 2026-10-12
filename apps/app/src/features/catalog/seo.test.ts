@@ -32,7 +32,10 @@ const listing: ListingDetail = {
       landmark: 'Tejuosho Market, Block C',
       address: null,
       areaId: null,
+      areaName: 'Yaba',
     },
+    hours: { opensAt: '08:00', closesAt: '19:00', openDays: [1, 2, 3, 4, 5, 6] },
+    activeListings: 3,
   },
 };
 
