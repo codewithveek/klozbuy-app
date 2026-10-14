@@ -1,5 +1,9 @@
-# klozbuy.com is still served by Netlify from the previous Next.js app, which now lives in
-# legacy/next-app. Netlify builds it from there (with the env vars set in its dashboard)
-# until the new web app (apps/app, deployed to Cloudflare Workers) takes over the domain.
+# Netlify builds are turned off for this repo. klozbuy.com keeps serving its last deploy of the
+# previous Next.js app (now in legacy/next-app) until the new web app (apps/app, deployed to
+# Cloudflare Workers) takes over the domain.
+#
+# `ignore` runs before each build; exit code 0 tells Netlify to skip the build. To build the
+# legacy app again, delete the `ignore` line (the base directory below is already right).
 [build]
   base = "legacy/next-app"
+  ignore = "exit 0"
