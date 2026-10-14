@@ -5,6 +5,7 @@ import type {
   PreparedQueryHKTBase,
 } from 'drizzle-orm/mysql-core';
 import { drizzle } from 'drizzle-orm/tidb-serverless';
+import { withMysqlAffectedRows } from './affected-rows';
 import * as schema from './schema';
 
 export interface DbOptions {
@@ -33,9 +34,11 @@ export type DbExecutor = Db | Tx;
  * open connection) and pass it to services through ctx; never keep it in a module global.
  */
 export function createDb({ url, timeoutMs = DEFAULT_TIMEOUT_MS }: DbOptions): Db {
-  const client = connect({
-    url,
-    fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(timeoutMs) }),
-  });
+  const client = withMysqlAffectedRows(
+    connect({
+      url,
+      fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(timeoutMs) }),
+    }),
+  );
   return drizzle({ client, ...DRIZZLE_CONFIG });
 }

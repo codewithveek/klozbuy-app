@@ -9,6 +9,8 @@ export interface Env {
   /** Comma-separated web origins and app schemes allowed to call the API with cookies. */
   TRUSTED_ORIGINS: string;
   COOKIE_DOMAIN?: string;
+  /** "true" on a preview whose web app and API are on different workers.dev hosts. */
+  CROSS_SITE_COOKIES?: string;
   OTP_SENDER: string;
   TERMII_BASE_URL?: string;
   TERMII_SENDER_ID?: string;
@@ -28,6 +30,7 @@ const rawConfigSchema = z
     SITE_URL: z.url(),
     TRUSTED_ORIGINS: z.string().min(1),
     COOKIE_DOMAIN: z.string().min(1).optional(),
+    CROSS_SITE_COOKIES: z.enum(['true', 'false']).optional(),
     DATABASE_URL: z.string().startsWith('mysql://'),
     BETTER_AUTH_SECRET: z.string().min(32),
     OTP_SENDER: z.enum(['console', 'termii']),
@@ -53,6 +56,7 @@ export interface Config {
   siteUrl: string;
   trustedOrigins: string[];
   cookieDomain?: string;
+  crossSiteCookies: boolean;
   databaseUrl: string;
   authSecret: string;
   otp: OtpConfig;
@@ -78,6 +82,7 @@ export function parseConfig(env: Env): Config {
       .map((origin) => origin.trim())
       .filter(Boolean),
     cookieDomain: raw.COOKIE_DOMAIN,
+    crossSiteCookies: raw.CROSS_SITE_COOKIES === 'true',
     databaseUrl: raw.DATABASE_URL,
     authSecret: raw.BETTER_AUTH_SECRET,
     otp:

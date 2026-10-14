@@ -28,6 +28,7 @@ export const services = (dbFactory: DbFactory) =>
         baseUrl: config.apiUrl,
         trustedOrigins: config.trustedOrigins,
         cookieDomain: config.cookieDomain,
+        crossSiteCookies: config.crossSiteCookies,
         sendOtp: createOtpSender(config.otp),
       });
       return auth;

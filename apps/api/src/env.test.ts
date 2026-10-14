@@ -21,6 +21,11 @@ describe('parseConfig', () => {
     expect(config.otp).toMatchObject({ sender: 'termii', baseUrl: 'https://api.ng.termii.com' });
   });
 
+  it('sends cross-site cookies only when asked to', () => {
+    expect(parseConfig(testEnv()).crossSiteCookies).toBe(false);
+    expect(parseConfig(testEnv({ CROSS_SITE_COOKIES: 'true' })).crossSiteCookies).toBe(true);
+  });
+
   it('names invalid fields without echoing their values', () => {
     const secret = 'mysql-but-wrong-scheme://secret-password@host/db';
     expect(() => parseConfig(testEnv({ DATABASE_URL: secret }))).toThrow(/DATABASE_URL/);

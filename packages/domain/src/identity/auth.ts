@@ -19,6 +19,12 @@ export interface AuthOptions {
   trustedOrigins: string[];
   /** Parent domain shared by the web app and the API, e.g. klozbuy.com. */
   cookieDomain?: string;
+  /**
+   * Send the session cookie with requests from another site. Only for a preview where the web
+   * app and the API sit on different workers.dev hosts (a public suffix, so they are different
+   * sites). Off elsewhere: SameSite=Lax is safer.
+   */
+  crossSiteCookies?: boolean;
   sendOtp: OtpSender;
 }
 
@@ -76,6 +82,9 @@ export function createAuth(options: AuthOptions) {
       database: { generateId: () => createId() },
       crossSubDomainCookies: options.cookieDomain
         ? { enabled: true, domain: options.cookieDomain }
+        : undefined,
+      defaultCookieAttributes: options.crossSiteCookies
+        ? { sameSite: 'none', secure: true }
         : undefined,
     },
     plugins: [phoneSignIn(options.sendOtp), expo()],

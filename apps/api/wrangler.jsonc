@@ -21,6 +21,31 @@
     { "name": "OTP_PHONE_LIMITER", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } },
   ],
   "env": {
+    // A throwaway deploy on workers.dev. Its URLs depend on the Cloudflare account, so
+    // API_URL, SITE_URL and TRUSTED_ORIGINS are passed with --var (see README, "Preview").
+    // The web app and API are on different workers.dev hosts, which are different sites, so
+    // the session cookie must be allowed across sites. Codes are logged, not sent by SMS:
+    // read them with `wrangler tail --env preview`.
+    "preview": {
+      "name": "klozbuy-api-preview",
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "OTP_SENDER": "console",
+        "CROSS_SITE_COOKIES": "true",
+      },
+      "ratelimits": [
+        {
+          "name": "AUTH_IP_LIMITER",
+          "namespace_id": "4001",
+          "simple": { "limit": 20, "period": 60 },
+        },
+        {
+          "name": "OTP_PHONE_LIMITER",
+          "namespace_id": "4002",
+          "simple": { "limit": 3, "period": 60 },
+        },
+      ],
+    },
     "staging": {
       "name": "klozbuy-api-staging",
       "vars": {

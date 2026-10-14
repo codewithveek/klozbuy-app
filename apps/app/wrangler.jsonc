@@ -5,7 +5,10 @@
   "name": "klozbuy-web",
   "main": "dist/server/index.js",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": ["nodejs_compat"],
+  // The server-rendered pages call the API worker with fetch. Without global_fetch_strictly_public
+  // Cloudflare refuses a Worker fetching another Worker on workers.dev (verified: the listing
+  // page rendered "not found" without it).
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "observability": { "enabled": true },
   // The export's server bundle (CommonJS, from Metro) and route manifest are loaded with
   // dynamic imports, so they are uploaded as extra modules rather than bundled.
@@ -16,8 +19,26 @@
     { "type": "Text", "globs": ["**/*.json", "**/*.html"], "fallthrough": true },
   ],
   "assets": { "directory": "dist/client", "binding": "ASSETS" },
+  // The server reads EXPO_PUBLIC_API_URL and EXPO_PUBLIC_SITE_URL at runtime from these vars;
+  // the same names at build time only reach the browser bundle. Without them server-rendered
+  // pages call http://localhost:8787. Neither is a secret.
   "env": {
-    "staging": { "name": "klozbuy-web-staging" },
-    "production": { "name": "klozbuy-web-production" },
+    // workers.dev URLs depend on the Cloudflare account, so they are passed with --var
+    // (see README, "Preview").
+    "preview": { "name": "klozbuy-web-preview" },
+    "staging": {
+      "name": "klozbuy-web-staging",
+      "vars": {
+        "EXPO_PUBLIC_API_URL": "https://api.staging.klozbuy.com",
+        "EXPO_PUBLIC_SITE_URL": "https://staging.klozbuy.com",
+      },
+    },
+    "production": {
+      "name": "klozbuy-web-production",
+      "vars": {
+        "EXPO_PUBLIC_API_URL": "https://api.klozbuy.com",
+        "EXPO_PUBLIC_SITE_URL": "https://klozbuy.com",
+      },
+    },
   },
 }

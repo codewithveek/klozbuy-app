@@ -1,10 +1,14 @@
 /**
  * Fills a local database with demo shops and listings around Yaba, through the real
- * domain services (so the feed's read model is built the normal way). Development only.
+ * domain services (so the feed's read model is built the normal way). Development and previews
+ * only: never run it against production data.
  *
  *   LOCAL_DATABASE_URL=mysql://root@127.0.0.1:4000/klozbuy_local pnpm --filter @klozbuy/api demo-data
+ *
+ * With --cloud it fills the TiDB Cloud database in DATABASE_URL over HTTPS instead, for a preview
+ * deploy (migrate it first with `pnpm --filter @klozbuy/db migrate:serverless`).
  */
-import { CATEGORY_IDS, seedReferenceData, type Db } from '@klozbuy/db';
+import { CATEGORY_IDS, createDb, seedReferenceData, type Db } from '@klozbuy/db';
 import { users } from '@klozbuy/db/schema';
 import { createTestDb } from '@klozbuy/db/testing';
 import { createEventSink, systemClock, type Actor, type Ctx } from '@klozbuy/domain';
@@ -72,9 +76,20 @@ async function addBuyerActivity(buyer: Ctx, listingIds: string[]) {
   for (const request of REQUESTS) await createRequest(buyer, request);
 }
 
+/** Local MySQL by default; TiDB Cloud over HTTPS only when asked with --cloud. */
+function openDb(): { db: Db; close: () => Promise<void> } {
+  if (process.argv.includes('--cloud')) {
+    const url = process.env.DATABASE_URL ?? '';
+    if (!url.startsWith('mysql://')) throw new Error('--cloud needs DATABASE_URL (mysql://…)');
+    return { db: createDb({ url, timeoutMs: 30_000 }), close: async () => undefined };
+  }
+  return createTestDb(
+    process.env.LOCAL_DATABASE_URL ?? 'mysql://root@127.0.0.1:4000/klozbuy_local',
+  );
+}
+
 async function main() {
-  const url = process.env.LOCAL_DATABASE_URL ?? 'mysql://root@127.0.0.1:4000/klozbuy_local';
-  const { db, close } = createTestDb(url);
+  const { db, close } = openDb();
   await seedReferenceData(db);
   const agent = ctxFor(db, { userId: createId<'User'>(), role: 'agent' });
   const listingIds: string[] = [];

@@ -70,6 +70,36 @@ TEST_DATABASE_URL=mysql://root@127.0.0.1:4000/klozbuy_test pnpm test
 - After changing the schema, run `pnpm db:generate` and commit the new file in `packages/db/drizzle`. CI fails if the schema and migrations disagree.
 - Apply migrations with `DATABASE_URL=… pnpm db:migrate`. Change columns expand-then-contract (add, backfill, switch code, then drop) so the running version never breaks.
 
+## Preview
+
+A throwaway deploy on `workers.dev`, with its own TiDB Cloud database, for showing the app to someone. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` (a token that can edit Workers) and `DATABASE_URL` for a TiDB Cloud cluster, in your shell or the environment's settings. Find your account's `workers.dev` name with `wrangler whoami` or in the Cloudflare dashboard (Workers & Pages).
+
+```sh
+SUB=<your workers.dev subdomain>
+API=https://klozbuy-api-preview.$SUB.workers.dev
+WEB=https://klozbuy-web-preview.$SUB.workers.dev
+
+# 1. The database: creates it if missing and applies the migrations over HTTPS
+pnpm --filter @klozbuy/db migrate:serverless
+pnpm --filter @klozbuy/api demo-data --cloud       # optional: demo shops, listings and requests
+
+# 2. The API. Secrets go in a file that you delete afterwards.
+echo '{"BETTER_AUTH_SECRET":"'$(openssl rand -base64 36)'","DATABASE_URL":"'$DATABASE_URL'"}' > /tmp/preview-secrets.json
+(cd apps/api && npx wrangler deploy --env preview --var API_URL:$API --var SITE_URL:$WEB \
+  --var TRUSTED_ORIGINS:$WEB --secrets-file /tmp/preview-secrets.json)
+rm /tmp/preview-secrets.json
+
+# 3. The web app. The browser bundle gets the API address at build time; the server-rendered
+#    pages read it at runtime, from the worker's variables.
+cd apps/app
+EXPO_PUBLIC_API_URL=$API EXPO_PUBLIC_SITE_URL=$WEB pnpm build:web
+npx wrangler deploy --env preview --var EXPO_PUBLIC_API_URL:$API --var EXPO_PUBLIC_SITE_URL:$WEB
+```
+
+Sign-in codes are not sent by SMS on a preview; read them from the API's log with `npx wrangler tail klozbuy-api-preview` (in `apps/api`). The web app and the API are on different `workers.dev` hosts, which count as different sites, so the preview sets `CROSS_SITE_COOKIES=true`; leave that off anywhere the two share a domain.
+
+`pnpm migrate` needs a direct MySQL connection on port 4000. `migrate:serverless` does the same job over HTTPS, for places such as CI jobs and cloud sandboxes where only HTTPS gets out.
+
 ## Deploy
 
 Each worker has `staging` and `production` environments in its `wrangler.jsonc`.
@@ -84,7 +114,7 @@ npx wrangler secret put TERMII_API_KEY --env staging      # SMS for sign-in code
 npx wrangler deploy --env staging
 ```
 
-Web app:
+Web app (the server-side address of the API comes from `vars` in `wrangler.jsonc`):
 
 ```sh
 cd apps/app

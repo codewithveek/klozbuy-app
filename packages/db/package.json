@@ -14,7 +14,8 @@
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "check:migrations": "drizzle-kit check",
-    "create-database": "node scripts/create-database.mjs"
+    "create-database": "node scripts/create-database.mjs",
+    "migrate:serverless": "node scripts/migrate-serverless.mjs"
   },
   "dependencies": {
     "@klozbuy/contracts": "workspace:*",
