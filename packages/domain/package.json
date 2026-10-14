@@ -1,0 +1,35 @@
+{
+  "name": "@klozbuy/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./identity": "./src/identity/index.ts",
+    "./shops": "./src/shops/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./discovery": "./src/discovery/index.ts",
+    "./leads": "./src/leads/index.ts",
+    "./places": "./src/places/index.ts",
+    "./requests": "./src/requests/index.ts",
+    "./moderation": "./src/moderation/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@better-auth/expo": "^1.7.7",
+    "@klozbuy/contracts": "workspace:*",
+    "@klozbuy/db": "workspace:*",
+    "@klozbuy/shared": "workspace:*",
+    "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261012.1",
+    "@klozbuy/config": "workspace:*",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.4"
+  }
+}
